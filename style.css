@@ -162,6 +162,10 @@ main {
   max-width: 640px;
 }
 
+.section > p + p {
+  margin-top: 12px;
+}
+
 /* Military service */
 .service-item {
   background: var(--surface);
