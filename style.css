@@ -162,6 +162,52 @@ main {
   max-width: 640px;
 }
 
+/* Military service */
+.service-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.service-unit {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.service-dates {
+  color: var(--muted);
+  font-size: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 12px;
+}
+
+.service-item > p {
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.service-list {
+  padding-left: 20px;
+  color: var(--muted);
+}
+
+.service-list li {
+  margin-bottom: 6px;
+}
+
 /* Project cards */
 .cards {
   display: grid;
