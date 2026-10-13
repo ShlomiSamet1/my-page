@@ -1,7 +1,6 @@
 // Contact form: checks every field before anything is sent.
 // Whatever the visitor types is only ever shown as plain text, never as HTML.
 
-const TO_ADDRESS = "shlomisamet@worldsmeet.com";
 const MESSAGE_MIN = 20;
 const MESSAGE_MAX = 1000;
 const REASONS = {
@@ -18,7 +17,9 @@ const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
 // Letters in any language (Hebrew, English, accents…), separated by spaces, hyphens,
 // apostrophes or dots, e.g. "Shlomi Samet", "Jean-Luc O'Neil", "J. R. Smith"
 const NAME_PATTERN = /^[\p{L}\p{M}]+(?:[ '’.-]+[\p{L}\p{M}]+)*\.?$/u;
-const EMAIL_LOCAL = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
+// Pronouns like "she/her", "they / them", "he, him" or "הוא"
+const PRONOUNS_PATTERN = /^[\p{L}\p{M}]+(?:\s*[\/,]\s*[\p{L}\p{M}]+|\s+[\p{L}\p{M}]+)*$/u;
+const EMAIL_LOCAL =/^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
 const EMAIL_DOMAIN = /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
 
 // Removes invisible characters, unifies line endings and trims the ends
@@ -38,6 +39,15 @@ function validateName(value) {
   if (charCount(name) > 80) return "Name must be 80 characters or fewer.";
   if (!NAME_PATTERN.test(name)) {
     return "Name can only contain letters, spaces, hyphens and apostrophes.";
+  }
+  return "";
+}
+
+function validatePronouns(pronouns) {
+  if (!pronouns) return ""; // Optional, so empty is fine
+  if (charCount(pronouns) > 30) return "Pronouns must be 30 characters or fewer.";
+  if (!PRONOUNS_PATTERN.test(pronouns)) {
+    return "Use letters with slashes or spaces, like she/her or they/them.";
   }
   return "";
 }
@@ -80,13 +90,22 @@ function validateMessage(message) {
   return "";
 }
 
+// Pretends to send the message to a server: waits a moment, then reports success.
+// Nothing is actually delivered yet. To make it real, replace the inside of this
+// function with a fetch() call to your own server or a form service.
+function sendMessage(data) {
+  return new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 1200));
+}
+
 const form = document.getElementById("contact-form");
 const submitButton = form.querySelector('button[type="submit"]');
 const status = form.querySelector(".form-status");
 const counter = document.getElementById("cf-message-count");
+const success = document.querySelector(".form-success");
 
 const fields = {
   name: { input: document.getElementById("cf-name"), validate: validateName },
+  pronouns: { input: document.getElementById("cf-pronouns"), validate: validatePronouns },
   email: { input: document.getElementById("cf-email"), validate: validateEmail },
   reason: { input: document.getElementById("cf-reason"), validate: validateReason },
   message: { input: document.getElementById("cf-message"), validate: validateMessage },
@@ -107,6 +126,21 @@ function updateCounter() {
   counter.classList.toggle("is-over", count > MESSAGE_MAX);
 }
 
+function setSending(isSending) {
+  form.inert = isSending; // No editing or double-submitting while "sending"
+  form.setAttribute("aria-busy", String(isSending));
+  submitButton.textContent = isSending ? "Sending…" : "Send message";
+  submitButton.classList.toggle("is-sending", isSending);
+}
+
+function showSuccess({ name, email }) {
+  success.querySelector(".success-text").textContent =
+    `Thank you, ${name}. Your message is on its way, and I'll get back to you at ${email} soon.`;
+  form.hidden = true;
+  success.hidden = false;
+  success.focus();
+}
+
 for (const [key, { input }] of Object.entries(fields)) {
   // Check when the visitor leaves a field they've typed in
   input.addEventListener("blur", () => {
@@ -121,12 +155,9 @@ for (const [key, { input }] of Object.entries(fields)) {
 fields.message.input.addEventListener("input", updateCounter);
 fields.reason.input.addEventListener("change", () => checkField("reason"));
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (submitButton.disabled) return;
-
   status.textContent = "";
-  status.classList.remove("is-success");
 
   // Check every field (not stopping at the first) so all errors show at once
   const invalidKeys = Object.keys(fields).filter((key) => !checkField(key));
@@ -136,26 +167,34 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  const name = clean(fields.name.input.value).replace(/\s+/g, " ");
-  const email = clean(fields.email.input.value);
-  const reason = REASONS[fields.reason.input.value];
-  const message = clean(fields.message.input.value);
+  const data = {
+    name: clean(fields.name.input.value).replace(/\s+/g, " "),
+    pronouns: clean(fields.pronouns.input.value).replace(/\s+/g, " "),
+    email: clean(fields.email.input.value),
+    reason: REASONS[fields.reason.input.value],
+    message: clean(fields.message.input.value),
+  };
 
-  // The site has no server, so the message opens in the visitor's email app.
-  // encodeURIComponent keeps the text from adding extra recipients or breaking the link.
-  const subject = `${reason}: message from ${name}`;
-  const body = `${message}\n\n${name}\n${email}`;
-  window.location.href =
-    `mailto:${TO_ADDRESS}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  setSending(true);
+  try {
+    await sendMessage(data);
+    showSuccess(data);
+  } catch {
+    status.textContent = "Something went wrong. Please try again, or email me directly.";
+  } finally {
+    setSending(false);
+  }
+});
 
-  status.textContent =
-    `Thank you, ${name}! Your email app should open with the message ready to send. ` +
-    `If it doesn't, write to ${TO_ADDRESS} directly.`;
-  status.classList.add("is-success");
-
-  // Stop double clicks from opening several emails
-  submitButton.disabled = true;
-  setTimeout(() => {
-    submitButton.disabled = false;
-  }, 3000);
+// "Send another message" brings back an empty form
+success.querySelector(".send-another").addEventListener("click", () => {
+  form.reset();
+  for (const { input } of Object.values(fields)) {
+    input.removeAttribute("aria-invalid");
+    document.getElementById(`${input.id}-error`).textContent = "";
+  }
+  updateCounter();
+  success.hidden = true;
+  form.hidden = false;
+  fields.name.input.focus();
 });
