@@ -11,6 +11,7 @@
   --line: rgba(201, 169, 110, 0.22);
   --header-bg: rgba(11, 11, 12, 0.72);
   --glow: rgba(201, 169, 110, 0.10);
+  --error: #e79a88;
   --serif: "Cormorant Garamond", "Times New Roman", serif;
   --sans: "Montserrat", system-ui, sans-serif;
   color-scheme: dark;
@@ -29,6 +30,7 @@
   --line: rgba(156, 127, 72, 0.28);
   --header-bg: rgba(247, 243, 236, 0.8);
   --glow: rgba(201, 169, 110, 0.18);
+  --error: #a8432f;
   color-scheme: light;
 }
 
@@ -636,14 +638,14 @@ main {
 }
 
 .field [aria-invalid="true"] {
-  border-color: #d9826f;
+  border-color: var(--error);
 }
 
 .field-error {
   min-height: 1.4em;
   margin-top: 6px;
   font-size: 0.8rem;
-  color: #e79a88;
+  color: var(--error);
 }
 
 .field-meta {
@@ -660,7 +662,7 @@ main {
 }
 
 .char-count.is-over {
-  color: #e79a88;
+  color: var(--error);
 }
 
 .contact-form .btn {
@@ -677,7 +679,7 @@ main {
 .form-status {
   margin-top: 18px;
   font-size: 0.9rem;
-  color: #e79a88;
+  color: var(--error);
 }
 
 .form-status.is-success {
