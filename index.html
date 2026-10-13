@@ -8,6 +8,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Apply the saved theme before the page paints, so it doesn't flash
+    try {
+      if (localStorage.getItem("theme") === "light") {
+        document.documentElement.dataset.theme = "light";
+      }
+    } catch (e) {}
+  </script>
+  <script src="script.js" defer></script>
   <script src="contact-form.js" defer></script>
 </head>
 <body>
@@ -20,6 +29,9 @@
       <a href="#service">Service</a>
       <a href="#projects">Projects</a>
       <a href="#contact" class="nav-cta">Contact</a>
+      <button type="button" class="theme-toggle" aria-label="Switch to light theme">
+        <span class="theme-icon" aria-hidden="true"></span>
+      </button>
     </nav>
   </header>
 
