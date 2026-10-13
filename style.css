@@ -9,9 +9,27 @@
   --gold-light: #e6cf9f;
   --gold-dark: #9c7f48;
   --line: rgba(201, 169, 110, 0.22);
+  --header-bg: rgba(11, 11, 12, 0.72);
+  --glow: rgba(201, 169, 110, 0.10);
   --serif: "Cormorant Garamond", "Times New Roman", serif;
   --sans: "Montserrat", system-ui, sans-serif;
   color-scheme: dark;
+}
+
+/* Light theme — ivory and gold, switched on by the toggle in the header */
+:root[data-theme="light"] {
+  --bg: #f7f3ec;
+  --bg-soft: #efe8dc;
+  --surface: #fffdf9;
+  --text: #1c1a16;
+  --muted: #6b645a;
+  --gold: #9c7f48;
+  --gold-light: #7f6535;
+  --gold-dark: #b8995f;
+  --line: rgba(156, 127, 72, 0.28);
+  --header-bg: rgba(247, 243, 236, 0.8);
+  --glow: rgba(201, 169, 110, 0.18);
+  color-scheme: light;
 }
 
 * {
@@ -28,9 +46,10 @@ body {
   font-family: var(--sans);
   font-weight: 300;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201, 169, 110, 0.10), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 0%, var(--glow), transparent 70%),
     var(--bg);
   color: var(--text);
+  transition: background-color 0.4s ease, color 0.4s ease;
   line-height: 1.75;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
@@ -94,7 +113,7 @@ h1 em {
   justify-content: space-between;
   align-items: center;
   padding: 22px clamp(20px, 5vw, 64px);
-  background: rgba(11, 11, 12, 0.72);
+  background: var(--header-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(201, 169, 110, 0.08);
@@ -128,6 +147,36 @@ h1 em {
   color: var(--gold);
   border-bottom: 1px solid var(--gold-dark);
   padding-bottom: 2px;
+}
+
+/* Theme toggle — a gold circle, half filled */
+.theme-toggle {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--gold);
+}
+
+.theme-icon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: linear-gradient(90deg, var(--gold) 50%, transparent 50%);
+  transition: transform 0.5s ease;
+}
+
+:root[data-theme="light"] .theme-icon {
+  transform: rotate(180deg);
 }
 
 /* Hero */
