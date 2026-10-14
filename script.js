@@ -42,6 +42,42 @@ if ("IntersectionObserver" in window && !reducedMotion) {
   }
 }
 
+// Stats count up from zero the first time they scroll into view.
+// The real numbers are already written in the page, so they still show without JavaScript.
+const statNumbers = document.querySelectorAll(".stat-num[data-count]");
+
+function countUp(el) {
+  const target = Number(el.dataset.count);
+  const suffix = el.dataset.suffix || "";
+  const duration = 1600;
+  const start = performance.now();
+
+  function step(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // starts fast, slows down at the end
+    el.textContent = Math.round(target * eased) + (progress === 1 ? suffix : "");
+    if (progress < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
+if ("IntersectionObserver" in window && !reducedMotion) {
+  const counter = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        countUp(entry.target);
+        counter.unobserve(entry.target);
+      }
+    }
+  }, { threshold: 0.6 });
+
+  for (const el of statNumbers) {
+    el.textContent = "0";
+    counter.observe(el);
+  }
+}
+
 // Highlights the menu link of the section you're currently reading
 const navLinks = document.querySelectorAll('.site-header nav a[href^="#"]');
 

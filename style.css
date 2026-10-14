@@ -8,6 +8,9 @@
   --gold: #c9a96e;
   --gold-light: #e6cf9f;
   --gold-dark: #9c7f48;
+  --champagne: #f3e5c8;
+  --rose-gold: #d9a68c;
+  --bronze: #8a6a3b;
   --line: rgba(201, 169, 110, 0.22);
   --header-bg: rgba(11, 11, 12, 0.72);
   --glow: rgba(201, 169, 110, 0.10);
@@ -27,6 +30,9 @@
   --gold: #9c7f48;
   --gold-light: #7f6535;
   --gold-dark: #b8995f;
+  --champagne: #a8844f;
+  --rose-gold: #a86f5a;
+  --bronze: #6e5228;
   --line: rgba(156, 127, 72, 0.28);
   --header-bg: rgba(247, 243, 236, 0.8);
   --glow: rgba(201, 169, 110, 0.18);
@@ -90,11 +96,15 @@ h1 em {
 /* Monogram */
 .monogram {
   font-family: var(--serif);
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   letter-spacing: 0.2em;
   color: var(--gold);
   border: 1px solid var(--line);
-  padding: 6px 12px 6px 16px;
+  padding: 5px 11px 5px 15px;
+  background: linear-gradient(120deg, var(--champagne), var(--gold) 40%, var(--rose-gold) 70%, var(--bronze));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .monogram .amp {
@@ -104,6 +114,7 @@ h1 em {
 
 .monogram.small {
   font-size: 1.1rem;
+  padding: 6px 12px 6px 16px;
 }
 
 /* Header */
@@ -114,11 +125,22 @@ h1 em {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 22px clamp(20px, 5vw, 64px);
+  padding: 14px clamp(20px, 5vw, 64px);
   background: var(--header-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(201, 169, 110, 0.08);
+}
+
+/* A thin line under the header: champagne in the middle, fading to nothing at the edges */
+.site-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--bronze) 15%, var(--champagne) 50%, var(--rose-gold) 85%, transparent);
+  opacity: 0.6;
 }
 
 .logo {
@@ -134,7 +156,7 @@ h1 em {
 .site-header nav a {
   text-decoration: none;
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.74rem;
   font-weight: 400;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -154,8 +176,8 @@ h1 em {
 
 /* Theme toggle — a gold circle, half filled */
 .theme-toggle {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   background: none;
@@ -191,20 +213,21 @@ main {
 
 .hero {
   position: relative;
-  min-height: calc(100vh - 80px);
+  min-height: calc(100vh - 64px);
+  min-height: calc(100svh - 64px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 0 120px;
+  padding: clamp(24px, 5vh, 64px) 0 clamp(64px, 10vh, 100px);
 }
 
 .hero h1 {
   font-family: var(--serif);
   font-weight: 300;
   line-height: 0.95;
-  margin-bottom: 36px;
+  margin-bottom: clamp(16px, 3.5vh, 36px);
 }
 
 .hero h1 .first,
@@ -212,25 +235,38 @@ main {
   display: block;
 }
 
-.hero h1 .first {
-  font-size: clamp(3.2rem, 11vw, 8rem);
-  letter-spacing: 0.02em;
-}
-
+.hero h1 .first,
 .hero h1 .last {
-  font-size: clamp(3.2rem, 11vw, 8rem);
-  font-style: italic;
-  background: linear-gradient(120deg, var(--gold-dark), var(--gold-light) 45%, var(--gold) 70%, var(--gold-dark));
+  font-size: clamp(2.4rem, min(8vw, 9.5vh), 5.5rem);
+  background-size: 250% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation: shimmer 9s ease-in-out infinite alternate;
+}
+
+.hero h1 .first {
+  letter-spacing: 0.02em;
+  background-image: linear-gradient(110deg, var(--champagne) 10%, var(--gold-light) 35%, var(--text) 55%, var(--gold) 75%, var(--champagne) 90%);
+}
+
+.hero h1 .last {
+  font-style: italic;
+  background-image: linear-gradient(110deg, var(--bronze), var(--gold) 25%, var(--champagne) 45%, var(--rose-gold) 65%, var(--gold-dark) 85%, var(--bronze));
+  animation-delay: -3s;
+}
+
+/* The colours slowly drift across the letters, like light moving over metal */
+@keyframes shimmer {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
 }
 
 .rule {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 28px;
+  margin-bottom: clamp(14px, 3vh, 28px);
 }
 
 .rule::before,
@@ -254,8 +290,16 @@ main {
   font-weight: 300;
   font-style: italic;
   color: var(--muted);
-  max-width: 560px;
-  margin-bottom: 48px;
+  max-width: 680px;
+  margin-bottom: clamp(12px, 2.5vh, 24px);
+}
+
+.bio {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 760px;
+  margin-bottom: clamp(24px, 5vh, 48px);
 }
 
 .actions {
@@ -267,10 +311,10 @@ main {
 
 .scroll-cue {
   position: absolute;
-  bottom: 24px;
+  bottom: 16px;
   left: 50%;
   width: 1px;
-  height: 56px;
+  height: 40px;
   background: var(--line);
   overflow: hidden;
 }
@@ -324,7 +368,22 @@ main {
 /* Sections */
 .section {
   padding: clamp(80px, 12vw, 140px) 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid;
+  border-image: linear-gradient(90deg, transparent, var(--bronze) 20%, var(--champagne) 50%, var(--rose-gold) 80%, transparent) 1;
+}
+
+/* Fading gold text for the headings in the page content */
+.display,
+.timeline-item .display-sm,
+.section-label .num {
+  background-image: linear-gradient(110deg, var(--champagne), var(--gold) 40%, var(--rose-gold) 75%, var(--gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.timeline-item .display-sm {
+  width: fit-content;
 }
 
 .section-label {
@@ -351,7 +410,7 @@ main {
   content: "";
   flex: 0 0 60px;
   height: 1px;
-  background: var(--gold-dark);
+  background: linear-gradient(90deg, var(--champagne), var(--gold-dark), transparent);
 }
 
 .section-label.center {
@@ -364,7 +423,8 @@ main {
 }
 
 .contact .display {
-  margin-bottom: 20px;
+  width: fit-content;
+  margin: 0 auto 20px;
 }
 
 .contact-text {
@@ -480,6 +540,48 @@ main {
   color: var(--error);
 }
 
+/* Stats row at the top of the Journey section */
+.stats {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px 24px;
+  margin-bottom: 72px;
+  padding: 32px 0;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-image: linear-gradient(90deg, transparent, var(--gold-dark) 20%, var(--champagne) 50%, var(--rose-gold) 80%, transparent) 1;
+  text-align: center;
+}
+
+.stats li {
+  flex: 0 1 150px;
+}
+
+.stat-num {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 300;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background-image: linear-gradient(110deg, var(--champagne), var(--gold) 45%, var(--rose-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 10px;
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 /* Journey timeline */
 .timeline {
   list-style: none;
@@ -495,7 +597,7 @@ main {
   bottom: 8px;
   left: 5px;
   width: 1px;
-  background: linear-gradient(var(--gold-dark), var(--line));
+  background: linear-gradient(var(--champagne), var(--gold) 30%, var(--rose-gold) 65%, var(--bronze) 90%, transparent);
 }
 
 .timeline-item {
@@ -703,6 +805,8 @@ main {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal { animation: none; opacity: 1; transform: none; }
+  .hero h1 .first,
+  .hero h1 .last { animation: none; }
   .scroll-cue span { animation: none; }
   .logo:hover .amp,
   .site-footer .monogram:hover .amp,
