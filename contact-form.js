@@ -6,6 +6,8 @@ const MESSAGE_MAX = 1000;
 const REASONS = {
   partnership: "Partnership",
   introduction: "Introduction",
+  consulting: "Consulting",
+  "join-network": "Joining the Worlds Meet network",
   other: "Other",
 };
 
