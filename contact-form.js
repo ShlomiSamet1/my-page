@@ -1,162 +1,64 @@
-// Contact form: checks every field before anything is sent.
+// Contact form: checks every field before anything is sent, then sends the
+// message to the server, which saves it for the Admin page.
 // Whatever the visitor types is only ever shown as plain text, never as HTML.
 //
 // How the file is organised, top to bottom:
-//   1. Settings and patterns (the rules a valid answer must follow)
-//   2. Helper functions that tidy and measure text
-//   3. One validate… function per field. Each returns an error message,
-//      or "" (empty text) when the answer is fine
-//   4. Functions that update the page (errors, counter, sending, success)
-//   5. Event listeners: code that runs when the visitor types, leaves a
+//   1. Imports: the shared rules (validation.js) and the server address (config.js)
+//   2. Sending the message to the server
+//   3. Functions that update the page (errors, counter, sending, success)
+//   4. Event listeners: code that runs when the visitor types, leaves a
 //      field, or presses Send
+//
+// This file is a "module" (index.html loads it with type="module"), which is
+// what allows the "import" lines below.
 
-// ─── 1. Settings ───
+// ─── 1. Imports ───
+import {
+  MESSAGE_MAX,
+  clean,
+  charCount,
+  validateName,
+  validatePronouns,
+  validateEmail,
+  validateReason,
+  validateMessage,
+} from "./validation.js";
+import { API_BASE } from "./config.js";
 
-// Message length limits, in characters
-const MESSAGE_MIN = 20;
-const MESSAGE_MAX = 1000;
-// The only accepted "reason" choices. Left side = the value inside the
-// <select> in index.html; right side = the readable name used in the message.
-const REASONS = {
-  partnership: "Partnership",
-  introduction: "Introduction",
-  consulting: "Consulting",
-  "join-network": "Joining the Worlds Meet network",
-  other: "Other",
-};
+// ─── 2. Sending ───
 
-// The lines below are "regular expressions" (regex): compact patterns for
-// matching text, written between two slashes /like this/. Letters after the
-// closing slash change how they work: g = find every match, u = understand
-// all languages and emoji properly.
-
-// Invisible characters (zero-width spaces etc.) that can make empty text look filled in
-const INVISIBLE = /[​-‍⁠﻿­]/g;
-// Control characters, except tab and newline which are fine in a message
-const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
-
-// Letters in any language (Hebrew, English, accents…), separated by spaces, hyphens,
-// apostrophes or dots, e.g. "Shlomi Samet", "Jean-Luc O'Neil", "J. R. Smith"
-const NAME_PATTERN = /^[\p{L}\p{M}]+(?:[ '’.-]+[\p{L}\p{M}]+)*\.?$/u;
-// Pronouns like "she/her", "they / them", "he, him" or "הוא"
-const PRONOUNS_PATTERN =
-  /^[\p{L}\p{M}]+(?:\s*[\/,]\s*[\p{L}\p{M}]+|\s+[\p{L}\p{M}]+)*$/u;
-// The part of an email before the @: English letters, digits and _ % + -,
-// with single dots allowed between them (e.g. "shlomi.samet")
-const EMAIL_LOCAL = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
-// The part after the @: one or more labels ending in a dot (e.g. "worldsmeet."),
-// each up to 63 characters and not starting or ending with a hyphen, followed
-// by an ending of 2–63 letters (e.g. "com")
-const EMAIL_DOMAIN =
-  /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
-
-// ─── 2. Helpers ───
-
-// Removes invisible characters, unifies line endings and trims the ends
-function clean(value) {
-  return value.replace(INVISIBLE, "").replace(/\r\n?/g, "\n").trim();
-}
-
-// Counts characters the way a person would: an emoji counts as 1, not 2
-function charCount(text) {
-  return Array.from(text).length;
-}
-
-// ─── 3. Validators: one per field. Each returns "" if fine, or an error message ───
-// Rules are checked in order, and the first broken rule decides the message,
-// so the visitor gets the most useful hint first.
-
-// Name: required, 2–80 characters, letters with spaces/hyphens/apostrophes
-function validateName(value) {
-  const name = value.replace(/\s+/g, " "); // Turn runs of spaces into one space
-  if (!name) return "Please enter your name.";
-  if (charCount(name) < 2) return "Name must be at least 2 characters.";
-  if (charCount(name) > 80) return "Name must be 80 characters or fewer.";
-  if (!NAME_PATTERN.test(name)) {
-    return "Name can only contain letters, spaces, hyphens and apostrophes.";
+// Sends the message to the server and waits for its answer.
+// fetch() is the browser's built-in way to call a server. We send:
+//   method POST                       = "here is new data to store"
+//   Content-Type: application/json    = the data is written as JSON
+//   body                              = the answers, turned into JSON text
+// "await" pauses until the server replies. If it replies with an error,
+// we "throw" one, which jumps to the catch block in the submit handler.
+async function sendMessage(data) {
+  // No server configured yet (live site before the server is online):
+  // pretend, like before. A Promise is "an answer that arrives later";
+  // setTimeout delivers it after 1.2 seconds.
+  if (!API_BASE) {
+    return new Promise((resolve) =>
+      setTimeout(() => resolve({ ok: true }), 1200),
+    );
   }
-  return "";
-}
 
-// Pronouns: optional, up to 30 characters, like "she/her"
-function validatePronouns(pronouns) {
-  if (!pronouns) return ""; // Optional, so empty is fine
-  if (charCount(pronouns) > 30)
-    return "Pronouns must be 30 characters or fewer.";
-  if (!PRONOUNS_PATTERN.test(pronouns)) {
-    return "Use letters with slashes or spaces, like she/her or they/them.";
+  const response = await fetch(`${API_BASE}/api/contact`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  // response.ok is true for success codes (200–299)
+  if (!response.ok) {
+    // Try to read the server's explanation; fall back to a general message
+    const reply = await response.json().catch(() => ({}));
+    throw new Error(reply.error || "The server couldn't accept the message.");
   }
-  return "";
+  return response.json();
 }
 
-// Email: checked step by step, so the visitor learns exactly what's wrong.
-// The length limits (254 total, 64 before the @, 253 after) are the
-// official maximums for email addresses.
-function validateEmail(email) {
-  const invalid = "Please enter a valid email, like name@example.com.";
-  if (!email) return "Please enter your email address.";
-  if (/\s/.test(email)) return "Email can't contain spaces.";
-  if (email.length > 254) return "Email is too long.";
-
-  // Find the @. indexOf gives its position, or -1 if it isn't there.
-  // lastIndexOf searches from the end: if the two positions differ,
-  // there's more than one @.
-  const at = email.indexOf("@");
-  if (at === -1) return "Email is missing the @ sign.";
-  if (at !== email.lastIndexOf("@"))
-    return "Email can only contain one @ sign.";
-
-  // Split into the part before the @ and the part after it, then check each
-  const local = email.slice(0, at);
-  const domain = email.slice(at + 1);
-  if (!local || local.length > 64 || !EMAIL_LOCAL.test(local)) return invalid;
-  if (!domain || domain.length > 253 || !EMAIL_DOMAIN.test(domain))
-    return invalid;
-  return "";
-}
-
-// Reason: must be one of the REASONS listed at the top
-function validateReason(reason) {
-  // Only accept one of our own options, even if someone edits the page
-  if (!Object.hasOwn(REASONS, reason)) return "Please choose a reason.";
-  return "";
-}
-
-// Message: 20–1000 characters of real words
-function validateMessage(message) {
-  if (!message) return "Please write a message.";
-  if (CONTROL.test(message))
-    return "Message contains characters that aren't allowed.";
-  if (charCount(message) > MESSAGE_MAX) {
-    return `Message must be ${MESSAGE_MAX} characters or fewer.`;
-  }
-  // Count runs of spaces as one, so 20 spaces in a row don't count as 20 characters
-  if (charCount(message.replace(/\s+/g, " ")) < MESSAGE_MIN) {
-    return `Message must be at least ${MESSAGE_MIN} characters.`;
-  }
-  // \p{L} = any letter, \p{N} = any digit, in any language
-  if (!/[\p{L}\p{N}]/u.test(message))
-    return "Message must contain words, not only symbols.";
-  // Catches "aaaaaaaaaaaaaaaaaaaa" and similar keyboard mashing
-  // How: a Set keeps only one copy of each character, so its size is the
-  // number of *different* characters. Fewer than 4 means it isn't a real message.
-  if (new Set(message.replace(/\s/g, "")).size < 4)
-    return "Please write a real message.";
-  return "";
-}
-
-// ─── 4. Sending and updating the page ───
-
-// Pretends to send the message to a server: waits a moment, then reports success.
-// Nothing is actually delivered yet. To make it real, replace the inside of this
-// function with a fetch() call to your own server or a form service.
-// A Promise is JavaScript's way of saying "the answer will arrive later".
-// setTimeout waits 1200 milliseconds (1.2 s), then resolve() delivers the answer.
-function sendMessage(data) {
-  return new Promise((resolve) =>
-    setTimeout(() => resolve({ ok: true }), 1200),
-  );
-}
+// ─── 3. Updating the page ───
 
 // Find the parts of the page this code works with (by id or class in index.html)
 const form = document.getElementById("contact-form");
@@ -226,7 +128,7 @@ function showSuccess({ name, email }) {
   success.focus();
 }
 
-// ─── 5. Event listeners: code that waits for the visitor to do something ───
+// ─── 4. Event listeners: code that waits for the visitor to do something ───
 
 // Go through every field and attach two listeners to it
 for (const [key, { input }] of Object.entries(fields)) {
@@ -261,26 +163,31 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  // Everything is valid: collect the tidied answers into one package
+  // Everything is valid: collect the tidied answers into one package.
+  // reason is sent as its short code (e.g. "partnership"); the server turns it
+  // into the readable name when saving.
   const data = {
     name: clean(fields.name.input.value).replace(/\s+/g, " "),
     pronouns: clean(fields.pronouns.input.value).replace(/\s+/g, " "),
     email: clean(fields.email.input.value),
-    reason: REASONS[fields.reason.input.value],
+    reason: fields.reason.input.value,
     message: clean(fields.message.input.value),
   };
 
   // try / catch / finally:
   //   try     = attempt to send and show the thank-you
-  //   catch   = runs only if sending failed: show an error instead
+  //   catch   = runs only if sending failed: show the reason instead
   //   finally = runs either way: leave the "Sending…" state
   setSending(true);
   try {
     await sendMessage(data); // Pause here until sending finishes
     showSuccess(data);
-  } catch {
-    status.textContent =
-      "Something went wrong. Please try again, or email me directly.";
+  } catch (error) {
+    // "Failed to fetch" means the server couldn't be reached at all
+    const unreachable = error instanceof TypeError;
+    status.textContent = unreachable
+      ? "Couldn't reach the server. Please try again, or email me directly."
+      : `${error.message} Please try again, or email me directly.`;
   } finally {
     setSending(false);
   }

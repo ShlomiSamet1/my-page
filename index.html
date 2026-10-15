@@ -36,7 +36,9 @@
     <!-- Our JavaScript files. "defer" = download now, but run only after the
          whole page is built, so the code can find every element it needs. -->
     <script src="script.js" defer></script>
-    <script src="contact-form.js" defer></script>
+    <!-- type="module" lets contact-form.js import the shared rules from
+         validation.js. Modules always wait for the page, like "defer". -->
+    <script src="contact-form.js" type="module"></script>
   </head>
   <!-- <body>: everything visible on the page -->
   <body>
@@ -317,6 +319,11 @@
             </div>
           </div>
 
+          <!-- Privacy note: tells visitors what happens to what they send -->
+          <p class="form-privacy">
+            Your message is stored securely and read only by me. It's never
+            shared.
+          </p>
           <button type="submit" class="btn btn-gold">Send message</button>
           <!-- Shows "Please fix the highlighted fields." or a sending error -->
           <p class="form-status" role="status" aria-live="polite"></p>
@@ -335,12 +342,16 @@
       </section>
     </main>
 
-    <!-- Footer: a thin rainbow line, the logo, a welcome note and the copyright -->
+    <!-- Footer: a thin rainbow line, the logo, a welcome note, the copyright
+         and the Admin link -->
     <footer class="site-footer">
       <span class="pride-line" aria-hidden="true"></span>
       <span class="monogram small">S<span class="amp">·</span>S</span>
       <p class="welcome">Everyone is welcome here.</p>
       <p>© 2026 Shlomi Samet &nbsp;·&nbsp; All rights reserved</p>
+      <!-- Link to the Admin page. Anyone can open the page, but only the
+           admin password unlocks the messages (the server checks it). -->
+      <a href="admin.html" class="admin-link">Admin</a>
     </footer>
   </body>
 </html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<!--
+  admin.html — the Admin page, where you read messages sent through the contact form.
+  Anyone can open this page, but it shows nothing until the right password is
+  entered: the messages come from the server, and the server only hands them
+  over after checking the password. The logic is in admin.js.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Asks search engines not to list this page -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin · Shlomi Samet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      // Apply the saved theme before the page paints (same as index.html)
+      try {
+        if (localStorage.getItem("theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+        }
+      } catch (e) {}
+    </script>
+    <script src="admin.js" type="module"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="index.html" class="logo" aria-label="Back to the site">
+        <span class="monogram">S<span class="amp">·</span>S</span>
+      </a>
+      <nav>
+        <a href="index.html">Back to site</a>
+      </nav>
+    </header>
+
+    <main class="admin">
+      <div class="section-label"><span class="num">—</span> Admin</div>
+
+      <!-- Step 1: log in. Shown until the password is accepted. -->
+      <section class="admin-login" aria-labelledby="login-title">
+        <h1 id="login-title" class="display">Messages</h1>
+        <p class="contact-text">Enter the admin password to read them.</p>
+        <form id="login-form" class="contact-form" novalidate>
+          <div class="field">
+            <label for="admin-password">Password</label>
+            <!-- autocomplete lets a password manager fill this in -->
+            <input
+              id="admin-password"
+              type="password"
+              autocomplete="current-password"
+              aria-describedby="admin-password-error"
+              required
+            />
+            <p
+              id="admin-password-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+          </div>
+          <button type="submit" class="btn btn-gold">Log in</button>
+        </form>
+      </section>
+
+      <!-- Step 2: the messages. Hidden until logged in. -->
+      <section class="admin-inbox" hidden aria-labelledby="inbox-title">
+        <div class="admin-toolbar">
+          <h1 id="inbox-title" class="display">Messages</h1>
+          <div class="admin-actions">
+            <button type="button" class="btn btn-line" id="refresh">
+              Refresh
+            </button>
+            <button type="button" class="btn btn-line" id="logout">
+              Log out
+            </button>
+          </div>
+        </div>
+        <!-- e.g. "3 messages"; aria-live announces changes to screen readers -->
+        <p class="admin-count" aria-live="polite"></p>
+        <!-- admin.js fills this list with one card per message -->
+        <ol class="admin-list"></ol>
+      </section>
+    </main>
+
+    <!-- A blueprint for one message card. <template> isn't shown on the page;
+         admin.js copies it for each message and fills in the text. -->
+    <template id="message-template">
+      <li class="admin-message">
+        <div class="admin-message-head">
+          <div>
+            <h2 class="display-sm admin-name"></h2>
+            <p class="admin-meta">
+              <span class="admin-pronouns"></span>
+              <a class="admin-email"></a>
+            </p>
+          </div>
+          <div class="admin-side">
+            <span class="timeline-when admin-reason"></span>
+            <time class="admin-date"></time>
+          </div>
+        </div>
+        <p class="admin-text"></p>
+        <div class="admin-message-actions">
+          <a class="btn btn-gold admin-reply">Reply</a>
+          <button type="button" class="btn btn-line admin-delete">
+            Delete
+          </button>
+        </div>
+      </li>
+    </template>
+  </body>
+</html>

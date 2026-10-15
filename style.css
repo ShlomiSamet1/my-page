@@ -969,6 +969,132 @@ main {
   }
 }
 
+/* Small "Admin" link at the bottom of the footer — quiet, for the owner */
+.admin-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.6rem;
+  opacity: 0.6;
+}
+
+.admin-link:hover {
+  color: var(--gold);
+  opacity: 1;
+}
+
+/* Privacy note above the Send button */
+.form-privacy {
+  margin-bottom: 18px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ─── Admin page (admin.html) ─── */
+
+.admin {
+  max-width: 860px;
+  padding-top: clamp(48px, 8vw, 96px);
+  padding-bottom: 96px;
+}
+
+.admin-login {
+  text-align: center;
+}
+
+/* Title on the left, buttons on the right; wraps on small screens */
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Buttons here are <button>s, which don't inherit the font by default */
+.admin .btn {
+  font-family: inherit;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.admin .btn-gold {
+  background-color: var(--gold);
+}
+
+.admin-count {
+  margin: 12px 0 32px;
+  color: var(--muted);
+}
+
+.admin-list {
+  list-style: none;
+  display: grid;
+  gap: 20px;
+}
+
+/* One message card */
+.admin-message {
+  padding: 28px;
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, var(--surface), var(--bg-soft));
+}
+
+.admin-message-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
+.admin-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.admin-email {
+  color: var(--gold-light);
+  overflow-wrap: anywhere; /* Long email addresses may break onto a new line */
+}
+
+.admin-side {
+  text-align: right;
+}
+
+.admin-side .timeline-when {
+  margin-bottom: 4px;
+}
+
+.admin-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* pre-wrap keeps the visitor's line breaks; anywhere breaks very long words */
+.admin-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin-bottom: 20px;
+}
+
+.admin-message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-message-actions .btn {
+  padding: 12px 24px;
+}
+
 /* Hero entrance animation — each part starts invisible and slightly low,
    then rises into place. The delay classes stagger them one after another.
    "forwards" keeps the final state after the animation ends. */
