@@ -106,11 +106,29 @@
         </div>
         <p class="admin-text"></p>
         <div class="admin-message-actions">
-          <a class="btn btn-gold admin-reply">Reply</a>
+          <!-- Opens a new Gmail email in a new tab, addressed to the sender -->
+          <a class="btn btn-gold admin-reply" target="_blank" rel="noopener"
+            >Reply in Gmail</a
+          >
+          <button type="button" class="btn btn-line admin-copy">
+            Copy email
+          </button>
           <button type="button" class="btn btn-line admin-delete">
             Delete
           </button>
+          <!-- Asks "are you sure?" on the page itself (hidden until Delete is pressed) -->
+          <span class="admin-confirm" hidden>
+            <span class="admin-confirm-text">Delete for good?</span>
+            <button type="button" class="btn btn-gold admin-confirm-yes">
+              Yes, delete
+            </button>
+            <button type="button" class="btn btn-line admin-confirm-no">
+              Cancel
+            </button>
+          </span>
         </div>
+        <!-- Short feedback, e.g. "Email copied" or an error -->
+        <p class="admin-action-status" aria-live="polite"></p>
       </li>
     </template>
   </body>
