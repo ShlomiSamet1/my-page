@@ -1,165 +1,292 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shlomi Samet</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script>
-    // Apply the saved theme before the page paints, so it doesn't flash
-    try {
-      if (localStorage.getItem("theme") === "light") {
-        document.documentElement.dataset.theme = "light";
-      }
-    } catch (e) {}
-  </script>
-  <script src="script.js" defer></script>
-  <script src="contact-form.js" defer></script>
-</head>
-<body>
-  <header class="site-header">
-    <a href="#" class="logo" aria-label="Shlomi Samet, home">
-      <span class="monogram">S<span class="amp">·</span>S</span>
-    </a>
-    <nav>
-      <a href="#journey">Journey</a>
-      <a href="#contact" class="nav-cta">Contact</a>
-      <button type="button" class="theme-toggle" aria-label="Switch to light theme">
-        <span class="theme-icon" aria-hidden="true"></span>
-      </button>
-    </nav>
-  </header>
-
-  <main>
-    <section class="hero">
-      <h1 class="reveal delay-1">
-        <span class="first">Shlomi</span>
-        <span class="last">Samet</span>
-      </h1>
-      <div class="rule reveal delay-2" aria-hidden="true"><span></span></div>
-      <p class="tagline reveal delay-2">28, calm under pressure, and at my best when I'm connecting people.</p>
-      <p class="bio reveal delay-2">I grew up in an ultra-Orthodox community and later chose my own path into the wider world, so I know both sides of Israeli society from the inside. From combat medic to a COVID-19 lab to foreign relations at Worlds Meet, I've learned to stay steady under pressure and feel at home in very different rooms. Today I build bridges between people of different backgrounds and beliefs, while studying computer science along the way.</p>
-      <div class="actions reveal delay-3">
-        <a href="#contact" class="btn btn-gold">Request an introduction</a>
-        <a href="#journey" class="btn btn-line">Discover more</a>
-      </div>
-      <a href="#journey" class="scroll-cue" aria-label="Scroll to Journey">
-        <span></span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shlomi Samet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      // Apply the saved theme before the page paints, so it doesn't flash
+      try {
+        if (localStorage.getItem("theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+        }
+      } catch (e) {}
+    </script>
+    <script src="script.js" defer></script>
+    <script src="contact-form.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="#" class="logo" aria-label="Shlomi Samet, home">
+        <span class="monogram">S<span class="amp">·</span>S</span>
       </a>
-    </section>
+      <nav>
+        <a href="#journey">Journey</a>
+        <a href="#contact" class="nav-cta">Contact</a>
+        <button
+          type="button"
+          class="theme-toggle"
+          aria-label="Switch to light theme"
+        >
+          <span class="theme-icon" aria-hidden="true"></span>
+        </button>
+      </nav>
+    </header>
 
-    <section id="journey" class="section">
-      <div class="section-label"><span class="num">01</span> Journey</div>
-      <ul class="stats">
-        <li><span class="stat-num" data-count="3">3</span><span class="stat-label">Years of service</span></li>
-        <li><span class="stat-num" data-count="4">4</span><span class="stat-label">Countries connected</span></li>
-        <li><span class="stat-num" data-count="20" data-suffix="+">20+</span><span class="stat-label">Introductions made</span></li>
-        <li><span class="stat-num" data-count="2">2</span><span class="stat-label">Languages spoken</span></li>
-        <li><span class="stat-num" data-count="50" data-suffix="+">50+</span><span class="stat-label">Soldiers trained</span></li>
-      </ul>
-      <ol class="timeline">
-        <li class="timeline-item">
-          <span class="timeline-when">Service</span>
-          <h3 class="display-sm">Combat Medic</h3>
-          <p class="timeline-where">Paratroopers Brigade</p>
-          <p>Served as the medical first responder for a combat unit: providing first aid and trauma care in the field, treating injuries under pressure, and training soldiers in casualty evacuation and life-saving basics. Responsible for the unit's medical equipment and readiness during training and operations.</p>
-          <p>Skills: trauma care · decision-making under pressure · teaching and instruction · teamwork · responsibility for others</p>
-        </li>
-        <li class="timeline-item">
-          <span class="timeline-when">COVID-19</span>
-          <h3 class="display-sm">Microbiology Laboratory Assistant</h3>
-          <p>Worked in a microbiology lab during the COVID-19 pandemic, receiving, registering and processing test samples under strict biosafety protocols. Kept results accurate and on time while the lab ran at high volume and every result mattered.</p>
-          <p>Skills: attention to detail · safety and quality procedures · accuracy at speed · reliability · working in a regulated environment</p>
-        </li>
-        <li class="timeline-item">
-          <span class="timeline-when">Present</span>
-          <h3 class="display-sm">Foreign Relations Representative</h3>
-          <p class="timeline-where">Worlds Meet</p>
-          <p>Worlds Meet is a platform for strategic business and social connections, bringing together executives and investors from Israel and the global Jewish business community who might never have met otherwise, across divides of background, religion and worldview. As its foreign relations representative, I open new connections abroad, introduce people who can help each other, and look after long-term relationships across cultures, languages and time zones. <a href="https://www.jpost.com/business-and-innovation/article-911448" target="_blank" rel="noopener">As featured in The Jerusalem Post</a>.</p>
-          <p>Skills: relationship building · cross-cultural communication · negotiation · public speaking · follow-through</p>
-        </li>
-        <li class="timeline-item is-current">
-          <span class="timeline-when">Studying</span>
-          <h3 class="display-sm">Computer Science</h3>
-          <p>Studying the foundations of computing alongside my work, with the support of Worlds Meet: programming, algorithms and data structures, and how software is designed and built. Putting it into practice with real projects, starting with this page, written in HTML, CSS and JavaScript.</p>
-          <p>Skills: programming · problem solving · web development · logical thinking · learning fast</p>
-        </li>
-      </ol>
-    </section>
-
-    <section id="contact" class="section contact">
-      <div class="section-label center"><span class="num">02</span> Contact</div>
-      <h2 class="display">Let's <em>talk.</em></h2>
-      <p class="contact-text">For partnerships, introductions and private enquiries.</p>
-      <a href="mailto:shlomisamet@worldsmeet.com" class="email-link">shlomisamet@worldsmeet.com</a>
-
-      <form id="contact-form" class="contact-form" novalidate>
-        <div class="field">
-          <label for="cf-name">Full name</label>
-          <input id="cf-name" name="name" type="text" autocomplete="name" maxlength="80"
-                 aria-describedby="cf-name-error" required>
-          <p id="cf-name-error" class="field-error" aria-live="polite"></p>
+    <main>
+      <section class="hero">
+        <h1 class="reveal delay-1">
+          <span class="first">Shlomi</span>
+          <span class="last">Samet</span>
+        </h1>
+        <div class="rule reveal delay-2" aria-hidden="true"><span></span></div>
+        <p class="tagline reveal delay-2">
+          28, calm under pressure, and at my best when I'm connecting people.
+        </p>
+        <p class="bio reveal delay-2">
+          I grew up in an ultra-Orthodox community and later chose my own path
+          into the wider world, so I know both sides of Israeli society from the
+          inside. From combat medic to a COVID-19 lab to foreign relations at
+          Worlds Meet, I've learned to stay steady under pressure and feel at
+          home in very different rooms. Today I build bridges between people of
+          different backgrounds and beliefs, while studying computer science
+          along the way.
+        </p>
+        <div class="actions reveal delay-3">
+          <a href="#contact" class="btn btn-gold">Request an introduction</a>
+          <a href="#journey" class="btn btn-line">Discover more</a>
         </div>
+        <a href="#journey" class="scroll-cue" aria-label="Scroll to Journey">
+          <span></span>
+        </a>
+      </section>
 
-        <div class="field">
-          <label for="cf-pronouns">Pronouns <span class="optional">optional</span></label>
-          <input id="cf-pronouns" name="pronouns" type="text" maxlength="30"
-                 placeholder="e.g. she/her, he/him, they/them"
-                 aria-describedby="cf-pronouns-error">
-          <p id="cf-pronouns-error" class="field-error" aria-live="polite"></p>
+      <section id="journey" class="section">
+        <div class="section-label"><span class="num">01</span> Journey</div>
+        <ul class="stats">
+          <li>
+            <span class="stat-num" data-count="3">3</span
+            ><span class="stat-label">Years of service</span>
+          </li>
+          <li>
+            <span class="stat-num" data-count="4">4</span
+            ><span class="stat-label">Countries connected</span>
+          </li>
+          <li>
+            <span class="stat-num" data-count="20" data-suffix="+">20+</span
+            ><span class="stat-label">Introductions made</span>
+          </li>
+          <li>
+            <span class="stat-num" data-count="2">2</span
+            ><span class="stat-label">Languages spoken</span>
+          </li>
+          <li>
+            <span class="stat-num" data-count="50" data-suffix="+">50+</span
+            ><span class="stat-label">Soldiers trained</span>
+          </li>
+        </ul>
+        <ol class="timeline">
+          <li class="timeline-item">
+            <span class="timeline-when">Service</span>
+            <h3 class="display-sm">Combat Medic</h3>
+            <p class="timeline-where">Paratroopers Brigade</p>
+            <p>
+              Served as the medical first responder for a combat unit: providing
+              first aid and trauma care in the field, treating injuries under
+              pressure, and training soldiers in casualty evacuation and
+              life-saving basics. Responsible for the unit's medical equipment
+              and readiness during training and operations.
+            </p>
+            <p>
+              Skills: trauma care · decision-making under pressure · teaching
+              and instruction · teamwork · responsibility for others
+            </p>
+          </li>
+          <li class="timeline-item">
+            <span class="timeline-when">COVID-19</span>
+            <h3 class="display-sm">Microbiology Laboratory Assistant</h3>
+            <p>
+              Worked in a microbiology lab during the COVID-19 pandemic,
+              receiving, registering and processing test samples under strict
+              biosafety protocols. Kept results accurate and on time while the
+              lab ran at high volume and every result mattered.
+            </p>
+            <p>
+              Skills: attention to detail · safety and quality procedures ·
+              accuracy at speed · reliability · working in a regulated
+              environment
+            </p>
+          </li>
+          <li class="timeline-item">
+            <span class="timeline-when">Present</span>
+            <h3 class="display-sm">Foreign Relations Representative</h3>
+            <p class="timeline-where">Worlds Meet</p>
+            <p>
+              Worlds Meet is a platform for strategic business and social
+              connections, bringing together executives and investors from
+              Israel and the global Jewish business community who might never
+              have met otherwise, across divides of background, religion and
+              worldview. As its foreign relations representative, I open new
+              connections abroad, introduce people who can help each other, and
+              look after long-term relationships across cultures, languages and
+              time zones.
+              <a
+                href="https://www.jpost.com/business-and-innovation/article-911448"
+                target="_blank"
+                rel="noopener"
+                >As featured in The Jerusalem Post</a
+              >.
+            </p>
+            <p>
+              Skills: relationship building · cross-cultural communication ·
+              negotiation · public speaking · follow-through
+            </p>
+          </li>
+          <li class="timeline-item is-current">
+            <span class="timeline-when">Studying</span>
+            <h3 class="display-sm">Computer Science</h3>
+            <p>
+              Studying the foundations of computing alongside my work, with the
+              support of Worlds Meet: programming, algorithms and data
+              structures, and how software is designed and built. Putting it
+              into practice with real projects, starting with this page, written
+              in HTML, CSS and JavaScript.
+            </p>
+            <p>
+              Skills: programming · problem solving · web development · logical
+              thinking · learning fast
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <section id="contact" class="section contact">
+        <div class="section-label center">
+          <span class="num">02</span> Contact
         </div>
+        <h2 class="display">Let's <em>talk.</em></h2>
+        <p class="contact-text">
+          For partnerships, introductions and private enquiries.
+        </p>
+        <a href="mailto:shlomisamet@worldsmeet.com" class="email-link"
+          >shlomisamet@worldsmeet.com</a
+        >
 
-        <div class="field">
-          <label for="cf-email">Email</label>
-          <input id="cf-email" name="email" type="email" autocomplete="email" maxlength="254"
-                 aria-describedby="cf-email-error" required>
-          <p id="cf-email-error" class="field-error" aria-live="polite"></p>
-        </div>
-
-        <div class="field">
-          <label for="cf-reason">Reason for reaching out</label>
-          <select id="cf-reason" name="reason" aria-describedby="cf-reason-error" required>
-            <option value="">Choose one…</option>
-            <option value="partnership">Partnership</option>
-            <option value="introduction">Introduction</option>
-            <option value="consulting">Consulting</option>
-            <option value="join-network">Joining the Worlds Meet network</option>
-            <option value="other">Other</option>
-          </select>
-          <p id="cf-reason-error" class="field-error" aria-live="polite"></p>
-        </div>
-
-        <div class="field">
-          <label for="cf-message">Message</label>
-          <textarea id="cf-message" name="message" rows="5" maxlength="1000"
-                    aria-describedby="cf-message-error cf-message-count" required></textarea>
-          <div class="field-meta">
-            <p id="cf-message-error" class="field-error" aria-live="polite"></p>
-            <span id="cf-message-count" class="char-count">0 / 1000</span>
+        <form id="contact-form" class="contact-form" novalidate>
+          <div class="field">
+            <label for="cf-name">Full name</label>
+            <input
+              id="cf-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              maxlength="80"
+              aria-describedby="cf-name-error"
+              required
+            />
+            <p id="cf-name-error" class="field-error" aria-live="polite"></p>
           </div>
+
+          <div class="field">
+            <label for="cf-pronouns"
+              >Pronouns <span class="optional">optional</span></label
+            >
+            <input
+              id="cf-pronouns"
+              name="pronouns"
+              type="text"
+              maxlength="30"
+              placeholder="e.g. she/her, he/him, they/them"
+              aria-describedby="cf-pronouns-error"
+            />
+            <p
+              id="cf-pronouns-error"
+              class="field-error"
+              aria-live="polite"
+            ></p>
+          </div>
+
+          <div class="field">
+            <label for="cf-email">Email</label>
+            <input
+              id="cf-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              maxlength="254"
+              aria-describedby="cf-email-error"
+              required
+            />
+            <p id="cf-email-error" class="field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="cf-reason">Reason for reaching out</label>
+            <select
+              id="cf-reason"
+              name="reason"
+              aria-describedby="cf-reason-error"
+              required
+            >
+              <option value="">Choose one…</option>
+              <option value="partnership">Partnership</option>
+              <option value="introduction">Introduction</option>
+              <option value="consulting">Consulting</option>
+              <option value="join-network">
+                Joining the Worlds Meet network
+              </option>
+              <option value="other">Other</option>
+            </select>
+            <p id="cf-reason-error" class="field-error" aria-live="polite"></p>
+          </div>
+
+          <div class="field">
+            <label for="cf-message">Message</label>
+            <textarea
+              id="cf-message"
+              name="message"
+              rows="5"
+              maxlength="1000"
+              aria-describedby="cf-message-error cf-message-count"
+              required
+            ></textarea>
+            <div class="field-meta">
+              <p
+                id="cf-message-error"
+                class="field-error"
+                aria-live="polite"
+              ></p>
+              <span id="cf-message-count" class="char-count">0 / 1000</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-gold">Send message</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="form-success" hidden tabindex="-1">
+          <span class="success-mark" aria-hidden="true"></span>
+          <h3 class="display-sm">Message sent</h3>
+          <p class="success-text"></p>
+          <button type="button" class="btn btn-line send-another">
+            Send another message
+          </button>
         </div>
+      </section>
+    </main>
 
-        <button type="submit" class="btn btn-gold">Send message</button>
-        <p class="form-status" role="status" aria-live="polite"></p>
-      </form>
-
-      <div class="form-success" hidden tabindex="-1">
-        <span class="success-mark" aria-hidden="true"></span>
-        <h3 class="display-sm">Message sent</h3>
-        <p class="success-text"></p>
-        <button type="button" class="btn btn-line send-another">Send another message</button>
-      </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <span class="pride-line" aria-hidden="true"></span>
-    <span class="monogram small">S<span class="amp">·</span>S</span>
-    <p class="welcome">Everyone is welcome here.</p>
-    <p>© 2026 Shlomi Samet &nbsp;·&nbsp; All rights reserved</p>
-  </footer>
-</body>
+    <footer class="site-footer">
+      <span class="pride-line" aria-hidden="true"></span>
+      <span class="monogram small">S<span class="amp">·</span>S</span>
+      <p class="welcome">Everyone is welcome here.</p>
+      <p>© 2026 Shlomi Samet &nbsp;·&nbsp; All rights reserved</p>
+    </footer>
+  </body>
 </html>
