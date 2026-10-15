@@ -21,9 +21,9 @@
     {
       "binding": "DB",
       "database_name": "my-page-db",
-      // Filled in after `wrangler d1 create my-page-db` (online setup step).
-      // Locally, any value works.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // The online database's ID (from `wrangler d1 create my-page-db`).
+      // Not secret: only this Cloudflare account can use it.
+      "database_id": "a723f50b-38a8-42e6-ac69-bd04faac3032",
       "migrations_dir": "migrations",
     },
   ],
