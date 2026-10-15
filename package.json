@@ -1,0 +1,24 @@
+{
+  "name": "my-page",
+  "version": "1.0.0",
+  "description": "Shlomi Samet's personal web page",
+  "scripts": {
+    "format": "prettier --write .",
+    "check": "prettier --check ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShlomiSamet1/my-page.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShlomiSamet1/my-page/issues"
+  },
+  "homepage": "https://github.com/ShlomiSamet1/my-page#readme",
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  },
+  "private": true
+}
