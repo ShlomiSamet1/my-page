@@ -1,35 +1,57 @@
 <!doctype html>
+<!--
+  index.html — the page's structure and content (the "skeleton").
+  The look lives in style.css, the behaviour in script.js and contact-form.js.
+  Order on the page: header → hero (name and bio) → Journey → Contact → footer.
+-->
+<!-- lang="en" tells browsers and screen readers the page is in English -->
 <html lang="en">
+  <!-- <head>: information about the page, not shown on screen -->
   <head>
+    <!-- UTF-8 lets the page show every language's letters and symbols -->
     <meta charset="UTF-8" />
+    <!-- Makes the page fit phone screens instead of showing a shrunk desktop page -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- The text on the browser tab -->
     <title>Shlomi Samet</title>
+    <!-- Load the two fonts from Google Fonts. "preconnect" opens the
+         connection early so the fonts arrive faster. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
+    <!-- Our own styling -->
     <link rel="stylesheet" href="style.css" />
     <script>
       // Apply the saved theme before the page paints, so it doesn't flash
+      // (script.js saves the choice in localStorage when the toggle is clicked)
       try {
         if (localStorage.getItem("theme") === "light") {
           document.documentElement.dataset.theme = "light";
         }
       } catch (e) {}
     </script>
+    <!-- Our JavaScript files. "defer" = download now, but run only after the
+         whole page is built, so the code can find every element it needs. -->
     <script src="script.js" defer></script>
     <script src="contact-form.js" defer></script>
   </head>
+  <!-- <body>: everything visible on the page -->
   <body>
+    <!-- Header: stays stuck to the top while you scroll -->
     <header class="site-header">
+      <!-- The "S·S" logo; clicking it goes back to the top. aria-label is the
+           name screen readers say, since "S·S" alone isn't meaningful. -->
       <a href="#" class="logo" aria-label="Shlomi Samet, home">
         <span class="monogram">S<span class="amp">·</span>S</span>
       </a>
+      <!-- Menu. href="#journey" jumps to the element with id="journey". -->
       <nav>
         <a href="#journey">Journey</a>
         <a href="#contact" class="nav-cta">Contact</a>
+        <!-- Light / dark theme button (script.js makes it work) -->
         <button
           type="button"
           class="theme-toggle"
@@ -40,12 +62,17 @@
       </nav>
     </header>
 
+    <!-- <main>: the page's main content -->
     <main>
+      <!-- Hero: the first full screen, with name, tagline, bio and buttons.
+           "reveal delay-1/2/3" make the parts fade in one after another (style.css). -->
       <section class="hero">
         <h1 class="reveal delay-1">
           <span class="first">Shlomi</span>
           <span class="last">Samet</span>
         </h1>
+        <!-- Decorative gold line with a diamond. aria-hidden hides it from
+             screen readers, since it's only decoration. -->
         <div class="rule reveal delay-2" aria-hidden="true"><span></span></div>
         <p class="tagline reveal delay-2">
           28, calm under pressure, and at my best when I'm connecting people.
@@ -63,13 +90,18 @@
           <a href="#contact" class="btn btn-gold">Request an introduction</a>
           <a href="#journey" class="btn btn-line">Discover more</a>
         </div>
+        <!-- The small animated line at the bottom inviting visitors to scroll -->
         <a href="#journey" class="scroll-cue" aria-label="Scroll to Journey">
           <span></span>
         </a>
       </section>
 
+      <!-- Section 01: Journey (stats row + timeline of roles) -->
       <section id="journey" class="section">
         <div class="section-label"><span class="num">01</span> Journey</div>
+        <!-- Stats row. data-count is the number script.js counts up to;
+             data-suffix is added at the end (the "+" in "20+"). The final
+             number is also written in the text, so it shows even without JavaScript. -->
         <ul class="stats">
           <li>
             <span class="stat-num" data-count="3">3</span
@@ -92,6 +124,8 @@
             ><span class="stat-label">Soldiers trained</span>
           </li>
         </ul>
+        <!-- Timeline: one <li> per role, oldest first. Each has a small label,
+             a title, an optional place, a description and a skills line. -->
         <ol class="timeline">
           <li class="timeline-item">
             <span class="timeline-when">Service</span>
@@ -137,6 +171,8 @@
               connections abroad, introduce people who can help each other, and
               look after long-term relationships across cultures, languages and
               time zones.
+              <!-- target="_blank" opens the article in a new tab;
+                   rel="noopener" stops that tab from controlling this page -->
               <a
                 href="https://www.jpost.com/business-and-innovation/article-911448"
                 target="_blank"
@@ -149,6 +185,7 @@
               negotiation · public speaking · follow-through
             </p>
           </li>
+          <!-- "is-current" fills this role's diamond in gold (style.css) -->
           <li class="timeline-item is-current">
             <span class="timeline-when">Studying</span>
             <h3 class="display-sm">Computer Science</h3>
@@ -167,6 +204,7 @@
         </ol>
       </section>
 
+      <!-- Section 02: Contact (email link + form) -->
       <section id="contact" class="section contact">
         <div class="section-label center">
           <span class="num">02</span> Contact
@@ -175,10 +213,19 @@
         <p class="contact-text">
           For partnerships, introductions and private enquiries.
         </p>
+        <!-- "mailto:" opens the visitor's email app with this address filled in -->
         <a href="mailto:shlomisamet@worldsmeet.com" class="email-link"
           >shlomisamet@worldsmeet.com</a
         >
 
+        <!-- The contact form, checked by contact-form.js. "novalidate" turns
+             off the browser's own error bubbles so our clearer messages show instead.
+             Each field follows the same pattern:
+               <label for="X">  the visible name, linked to the box with id="X"
+               <input id="X">   the box the visitor types in
+               <p id="X-error"> the empty line where an error message appears.
+             aria-describedby links the box to its error line, and aria-live
+             makes screen readers read new errors aloud. -->
         <form id="contact-form" class="contact-form" novalidate>
           <div class="field">
             <label for="cf-name">Full name</label>
@@ -229,6 +276,8 @@
 
           <div class="field">
             <label for="cf-reason">Reason for reaching out</label>
+            <!-- Drop-down list. Each option's value must match a key in
+                 REASONS in contact-form.js. -->
             <select
               id="cf-reason"
               name="reason"
@@ -263,14 +312,18 @@
                 class="field-error"
                 aria-live="polite"
               ></p>
+              <!-- Live character counter, updated by contact-form.js -->
               <span id="cf-message-count" class="char-count">0 / 1000</span>
             </div>
           </div>
 
           <button type="submit" class="btn btn-gold">Send message</button>
+          <!-- Shows "Please fix the highlighted fields." or a sending error -->
           <p class="form-status" role="status" aria-live="polite"></p>
         </form>
 
+        <!-- "Message sent" panel. "hidden" keeps it invisible until
+             contact-form.js shows it; tabindex="-1" lets the code move focus to it. -->
         <div class="form-success" hidden tabindex="-1">
           <span class="success-mark" aria-hidden="true"></span>
           <h3 class="display-sm">Message sent</h3>
@@ -282,6 +335,7 @@
       </section>
     </main>
 
+    <!-- Footer: a thin rainbow line, the logo, a welcome note and the copyright -->
     <footer class="site-footer">
       <span class="pride-line" aria-hidden="true"></span>
       <span class="monogram small">S<span class="amp">·</span>S</span>

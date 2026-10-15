@@ -1,4 +1,29 @@
-/* Colors and fonts — change these to restyle the whole page */
+/*
+  style.css — how the page looks.
+
+  How CSS works: each block is a "rule".
+    .name { property: value; }
+  The part before { } is the selector (which elements to style):
+    .name    = elements with class="name"
+    #name    = the element with id="name"
+    a b      = b elements inside a
+    :hover   = while the mouse is over it
+    ::before / ::after = an extra, decorative piece drawn before/after the content
+  Inside the braces are the properties to apply.
+
+  Units used here: px = screen pixels, rem = times the base font size,
+  em = times the current font size, vw / vh = % of the screen's width / height.
+  clamp(min, preferred, max) = a size that grows with the screen but never
+  goes below min or above max.
+
+  File order: colours → basics → header → hero → buttons → sections →
+  contact form → stats → timeline → success panel → footer → animations →
+  reduced motion → small screens.
+*/
+
+/* Colors and fonts — change these to restyle the whole page.
+   These are "CSS variables": define once here as --name, use anywhere
+   as var(--name). Changing one value here updates it everywhere. */
 :root {
   --bg: #0b0b0c;
   --bg-soft: #121214;
@@ -20,7 +45,9 @@
   color-scheme: dark;
 }
 
-/* Light theme — ivory and gold, switched on by the toggle in the header */
+/* Light theme — ivory and gold, switched on by the toggle in the header.
+   script.js adds data-theme="light" to <html>; this rule then overrides the
+   colour variables above, and the whole page changes at once. */
 :root[data-theme="light"] {
   --bg: #f7f3ec;
   --bg-soft: #efe8dc;
@@ -40,16 +67,21 @@
   color-scheme: light;
 }
 
+/* Reset: "*" means every element. Remove the browser's default spacing, and
+   make width/height include padding and border (much easier to size things). */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Menu links glide to their section instead of jumping */
 html {
   scroll-behavior: smooth;
 }
 
+/* Page-wide defaults: font, text colour, and a soft gold glow at the top
+   of the background (a radial-gradient = colour fading out from a centre) */
 body {
   font-family: var(--sans);
   font-weight: 300;
@@ -69,6 +101,7 @@ a {
   color: inherit;
 }
 
+/* Colour of text highlighted with the mouse */
 ::selection {
   background: var(--gold);
   color: var(--bg);
@@ -95,7 +128,10 @@ h1 em {
   line-height: 1.2;
 }
 
-/* Monogram */
+/* Monogram — the "S·S" logo.
+   Gold-text technique (used throughout this file): paint a gold gradient as
+   the background, clip it to the shape of the letters (background-clip: text),
+   and make the letters themselves transparent so the gradient shows through. */
 .monogram {
   font-family: var(--serif);
   font-size: 1.3rem;
@@ -125,7 +161,10 @@ h1 em {
   padding: 6px 12px 6px 16px;
 }
 
-/* Header */
+/* Header — "sticky" keeps it pinned to the top while scrolling, z-index keeps
+   it above the content, and backdrop-filter blurs whatever scrolls beneath it.
+   display: flex lines its children up in a row; space-between pushes the
+   logo to the left and the menu to the right. */
 .site-header {
   position: sticky;
   top: 0;
@@ -178,6 +217,7 @@ h1 em {
   transition: color 0.3s ease;
 }
 
+/* "is-active" is added by script.js to the link of the section you're reading */
 .site-header nav a:hover,
 .site-header nav a.is-active {
   color: var(--gold-light);
@@ -206,6 +246,8 @@ h1 em {
   border-color: var(--gold);
 }
 
+/* The half-filled circle: a gradient that is gold for the first 50% and
+   transparent for the rest. In light mode it rotates 180° (rule below). */
 .theme-icon {
   width: 14px;
   height: 14px;
@@ -219,13 +261,16 @@ h1 em {
   transform: rotate(180deg);
 }
 
-/* Hero */
+/* Main content column: at most 1100px wide, centred (margin auto) */
 main {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 clamp(20px, 5vw, 48px);
 }
 
+/* Hero — fills one screen (100% of the height minus the 64px header) and
+   centres its content. "svh" is a newer unit that ignores phone address
+   bars; browsers that don't know it use the vh line above it instead. */
 .hero {
   position: relative;
   min-height: calc(100vh - 64px);
@@ -250,6 +295,8 @@ main {
   display: block;
 }
 
+/* The name in gold. The gradient is 2.5× wider than the text (250%), so the
+   shimmer animation can slide it sideways, like light moving over metal. */
 .hero h1 .first,
 .hero h1 .last {
   font-size: clamp(2.4rem, min(8vw, 9.5vh), 5.5rem);
@@ -283,10 +330,12 @@ main {
     var(--gold-dark) 85%,
     var(--bronze)
   );
-  animation-delay: -3s;
+  animation-delay: -3s; /* Start 3 s "into" the animation, so the two lines shimmer out of step */
 }
 
-/* The colours slowly drift across the letters, like light moving over metal */
+/* The colours slowly drift across the letters, like light moving over metal.
+   @keyframes describes an animation: the "from" state and the "to" state;
+   the browser fills in everything in between. */
 @keyframes shimmer {
   from {
     background-position: 0% 50%;
@@ -296,6 +345,8 @@ main {
   }
 }
 
+/* Decorative divider: line ◆ line. The two lines are ::before and ::after;
+   the diamond is a small square rotated 45°. */
 .rule {
   display: flex;
   align-items: center;
@@ -343,6 +394,8 @@ main {
   flex-wrap: wrap;
 }
 
+/* Scroll hint: a thin track with a gold dash sliding down it on repeat.
+   overflow: hidden hides the dash while it's outside the track. */
 .scroll-cue {
   position: absolute;
   bottom: 16px;
@@ -369,7 +422,9 @@ main {
   }
 }
 
-/* Buttons */
+/* Buttons — .btn is the shared shape; .btn-gold (filled) and .btn-line
+   (outline) are the two looks. "transition" makes hover changes fade in
+   smoothly over 0.4 s instead of switching instantly. */
 .btn {
   display: inline-block;
   padding: 16px 34px;
@@ -410,7 +465,8 @@ main {
   color: var(--gold-light);
 }
 
-/* Sections */
+/* Sections — a gold top border that fades out at both ends
+   (border-image lets a gradient be used as a border) */
 .section {
   padding: clamp(80px, 12vw, 140px) 0;
   border-top: 1px solid;
@@ -445,6 +501,7 @@ main {
   width: fit-content;
 }
 
+/* Small section titles like "01 JOURNEY", followed by a short fading line */
 .section-label {
   display: flex;
   align-items: center;
@@ -519,6 +576,7 @@ main {
   text-align: left;
 }
 
+/* One label + box + error line */
 .field {
   margin-bottom: 22px;
 }
@@ -552,6 +610,7 @@ main {
   min-height: 140px;
 }
 
+/* :focus = the box the visitor is currently typing in */
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
@@ -559,10 +618,13 @@ main {
   border-color: var(--gold);
 }
 
+/* Red border on fields contact-form.js has marked as having an error */
 .field [aria-invalid="true"] {
   border-color: var(--error);
 }
 
+/* Error line. min-height reserves its space even when empty, so the page
+   doesn't jump when an error appears. */
 .field-error {
   min-height: 1.4em;
   margin-top: 6px;
@@ -570,6 +632,7 @@ main {
   color: var(--error);
 }
 
+/* Row under the message box: error on the left, character counter on the right */
 .field-meta {
   display: flex;
   justify-content: space-between;
@@ -631,6 +694,8 @@ main {
   flex: 0 1 150px;
 }
 
+/* The big numbers. tabular-nums gives every digit the same width, so the
+   number doesn't wobble while it counts up. */
 .stat-num {
   display: block;
   font-family: var(--serif);
@@ -659,7 +724,10 @@ main {
   color: var(--muted);
 }
 
-/* Journey timeline */
+/* Journey timeline — a vertical gold line (::before) on the left, with a
+   diamond marker (each item's ::before) next to every role.
+   position: relative on a parent + position: absolute on a child lets the
+   child be placed at exact offsets inside the parent. */
 .timeline {
   list-style: none;
   position: relative;
@@ -726,10 +794,13 @@ main {
   margin: 2px 0 10px;
 }
 
+/* "h3 + p" = a paragraph directly after the title; :not(...) skips the place
+   line, so space is added only when a role has no place */
 .timeline-item h3 + p:not(.timeline-where) {
   margin-top: 10px;
 }
 
+/* The last paragraph of each role is the skills line, shown in a softer colour */
 .timeline-item p:last-child {
   color: var(--muted);
   max-width: 600px;
@@ -767,10 +838,13 @@ main {
   animation: reveal 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+/* Needed because "display: flex" above would otherwise override "hidden" */
 .form-success[hidden] {
   display: none;
 }
 
+/* Gold tick in a circle. The tick is a box with only its right and bottom
+   borders drawn, rotated 45° so the two borders form a ✓. */
 .success-mark {
   width: 48px;
   height: 48px;
@@ -803,7 +877,9 @@ main {
   font-family: inherit;
 }
 
-/* Sections fade in as you scroll (only when JavaScript adds .will-reveal) */
+/* Sections fade in as you scroll (only when JavaScript adds .will-reveal).
+   Start: invisible and 24px lower. When script.js adds .is-visible, the
+   transition slides it up and fades it in. */
 .section.will-reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -817,7 +893,7 @@ main {
   transform: none;
 }
 
-/* Footer */
+/* Footer — items stacked in a centred column */
 .site-footer {
   display: flex;
   flex-direction: column;
@@ -893,7 +969,9 @@ main {
   }
 }
 
-/* Hero entrance animation */
+/* Hero entrance animation — each part starts invisible and slightly low,
+   then rises into place. The delay classes stagger them one after another.
+   "forwards" keeps the final state after the animation ends. */
 .reveal {
   opacity: 0;
   transform: translateY(18px);
@@ -917,6 +995,9 @@ main {
   }
 }
 
+/* @media = rules that apply only in certain conditions.
+   This one: the visitor has asked their device for less motion (an
+   accessibility setting), so turn off every animation and show things as-is. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -940,7 +1021,7 @@ main {
   }
 }
 
-/* Small screens */
+/* Small screens (560px wide or less, i.e. phones): buttons fill the width */
 @media (max-width: 560px) {
   .btn {
     width: 100%;

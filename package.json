@@ -1,4 +1,14 @@
 {
+  "//": [
+    "JSON cannot contain comments, so npm ignores any key named \"//\" and we use it for notes.",
+    "This file is the project record card: name, version, description, commands and packages used.",
+    "scripts: shortcuts. Run with `npm run <name>` (in PowerShell: `npm.cmd run <name>`).",
+    "  check  = list files whose formatting Prettier would tidy (changes nothing)",
+    "  format = tidy the formatting of every file",
+    "devDependencies: packages used only while building, never sent to visitors.",
+    "  ^3.9.10 = version 3.9.10 or any newer 3.x (never 4.0, which could break things).",
+    "private: true stops the project from being published to npm by accident."
+  ],
   "name": "my-page",
   "version": "1.0.0",
   "description": "Shlomi Samet's personal web page",
