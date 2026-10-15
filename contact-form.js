@@ -20,9 +20,11 @@ const CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/;
 // apostrophes or dots, e.g. "Shlomi Samet", "Jean-Luc O'Neil", "J. R. Smith"
 const NAME_PATTERN = /^[\p{L}\p{M}]+(?:[ '’.-]+[\p{L}\p{M}]+)*\.?$/u;
 // Pronouns like "she/her", "they / them", "he, him" or "הוא"
-const PRONOUNS_PATTERN = /^[\p{L}\p{M}]+(?:\s*[\/,]\s*[\p{L}\p{M}]+|\s+[\p{L}\p{M}]+)*$/u;
-const EMAIL_LOCAL =/^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
-const EMAIL_DOMAIN = /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
+const PRONOUNS_PATTERN =
+  /^[\p{L}\p{M}]+(?:\s*[\/,]\s*[\p{L}\p{M}]+|\s+[\p{L}\p{M}]+)*$/u;
+const EMAIL_LOCAL = /^[A-Za-z0-9_%+-]+(?:\.[A-Za-z0-9_%+-]+)*$/;
+const EMAIL_DOMAIN =
+  /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/;
 
 // Removes invisible characters, unifies line endings and trims the ends
 function clean(value) {
@@ -47,7 +49,8 @@ function validateName(value) {
 
 function validatePronouns(pronouns) {
   if (!pronouns) return ""; // Optional, so empty is fine
-  if (charCount(pronouns) > 30) return "Pronouns must be 30 characters or fewer.";
+  if (charCount(pronouns) > 30)
+    return "Pronouns must be 30 characters or fewer.";
   if (!PRONOUNS_PATTERN.test(pronouns)) {
     return "Use letters with slashes or spaces, like she/her or they/them.";
   }
@@ -62,12 +65,14 @@ function validateEmail(email) {
 
   const at = email.indexOf("@");
   if (at === -1) return "Email is missing the @ sign.";
-  if (at !== email.lastIndexOf("@")) return "Email can only contain one @ sign.";
+  if (at !== email.lastIndexOf("@"))
+    return "Email can only contain one @ sign.";
 
   const local = email.slice(0, at);
   const domain = email.slice(at + 1);
   if (!local || local.length > 64 || !EMAIL_LOCAL.test(local)) return invalid;
-  if (!domain || domain.length > 253 || !EMAIL_DOMAIN.test(domain)) return invalid;
+  if (!domain || domain.length > 253 || !EMAIL_DOMAIN.test(domain))
+    return invalid;
   return "";
 }
 
@@ -79,16 +84,19 @@ function validateReason(reason) {
 
 function validateMessage(message) {
   if (!message) return "Please write a message.";
-  if (CONTROL.test(message)) return "Message contains characters that aren't allowed.";
+  if (CONTROL.test(message))
+    return "Message contains characters that aren't allowed.";
   if (charCount(message) > MESSAGE_MAX) {
     return `Message must be ${MESSAGE_MAX} characters or fewer.`;
   }
   if (charCount(message.replace(/\s+/g, " ")) < MESSAGE_MIN) {
     return `Message must be at least ${MESSAGE_MIN} characters.`;
   }
-  if (!/[\p{L}\p{N}]/u.test(message)) return "Message must contain words, not only symbols.";
+  if (!/[\p{L}\p{N}]/u.test(message))
+    return "Message must contain words, not only symbols.";
   // Catches "aaaaaaaaaaaaaaaaaaaa" and similar keyboard mashing
-  if (new Set(message.replace(/\s/g, "")).size < 4) return "Please write a real message.";
+  if (new Set(message.replace(/\s/g, "")).size < 4)
+    return "Please write a real message.";
   return "";
 }
 
@@ -96,7 +104,9 @@ function validateMessage(message) {
 // Nothing is actually delivered yet. To make it real, replace the inside of this
 // function with a fetch() call to your own server or a form service.
 function sendMessage(data) {
-  return new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 1200));
+  return new Promise((resolve) =>
+    setTimeout(() => resolve({ ok: true }), 1200),
+  );
 }
 
 const form = document.getElementById("contact-form");
@@ -107,10 +117,22 @@ const success = document.querySelector(".form-success");
 
 const fields = {
   name: { input: document.getElementById("cf-name"), validate: validateName },
-  pronouns: { input: document.getElementById("cf-pronouns"), validate: validatePronouns },
-  email: { input: document.getElementById("cf-email"), validate: validateEmail },
-  reason: { input: document.getElementById("cf-reason"), validate: validateReason },
-  message: { input: document.getElementById("cf-message"), validate: validateMessage },
+  pronouns: {
+    input: document.getElementById("cf-pronouns"),
+    validate: validatePronouns,
+  },
+  email: {
+    input: document.getElementById("cf-email"),
+    validate: validateEmail,
+  },
+  reason: {
+    input: document.getElementById("cf-reason"),
+    validate: validateReason,
+  },
+  message: {
+    input: document.getElementById("cf-message"),
+    validate: validateMessage,
+  },
 };
 
 // Checks one field, shows or clears its error, and returns true if it's valid
@@ -146,7 +168,8 @@ function showSuccess({ name, email }) {
 for (const [key, { input }] of Object.entries(fields)) {
   // Check when the visitor leaves a field they've typed in
   input.addEventListener("blur", () => {
-    if (input.value || input.getAttribute("aria-invalid") === "true") checkField(key);
+    if (input.value || input.getAttribute("aria-invalid") === "true")
+      checkField(key);
   });
   // Once a field shows an error, re-check while typing so the error clears as soon as it's fixed
   input.addEventListener("input", () => {
@@ -182,7 +205,8 @@ form.addEventListener("submit", async (event) => {
     await sendMessage(data);
     showSuccess(data);
   } catch {
-    status.textContent = "Something went wrong. Please try again, or email me directly.";
+    status.textContent =
+      "Something went wrong. Please try again, or email me directly.";
   } finally {
     setSending(false);
   }

@@ -4,7 +4,10 @@ const toggle = document.querySelector(".theme-toggle");
 
 function setLabel() {
   const isLight = root.dataset.theme === "light";
-  toggle.setAttribute("aria-label", isLight ? "Switch to dark theme" : "Switch to light theme");
+  toggle.setAttribute(
+    "aria-label",
+    isLight ? "Switch to dark theme" : "Switch to light theme",
+  );
 }
 
 toggle.addEventListener("click", () => {
@@ -24,17 +27,22 @@ setLabel();
 
 // Sections fade in gently as they scroll into view
 const sections = document.querySelectorAll("main .section");
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
 
 if ("IntersectionObserver" in window && !reducedMotion) {
-  const revealer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("is-visible");
-        revealer.unobserve(entry.target);
+  const revealer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealer.unobserve(entry.target);
+        }
       }
-    }
-  }, { threshold: 0.12 });
+    },
+    { threshold: 0.12 },
+  );
 
   for (const section of sections) {
     section.classList.add("will-reveal");
@@ -55,7 +63,8 @@ function countUp(el) {
   function step(now) {
     const progress = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - progress, 3); // starts fast, slows down at the end
-    el.textContent = Math.round(target * eased) + (progress === 1 ? suffix : "");
+    el.textContent =
+      Math.round(target * eased) + (progress === 1 ? suffix : "");
     if (progress < 1) requestAnimationFrame(step);
   }
 
@@ -63,14 +72,17 @@ function countUp(el) {
 }
 
 if ("IntersectionObserver" in window && !reducedMotion) {
-  const counter = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        countUp(entry.target);
-        counter.unobserve(entry.target);
+  const counter = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          countUp(entry.target);
+          counter.unobserve(entry.target);
+        }
       }
-    }
-  }, { threshold: 0.6 });
+    },
+    { threshold: 0.6 },
+  );
 
   for (const el of statNumbers) {
     el.textContent = "0";
@@ -82,14 +94,20 @@ if ("IntersectionObserver" in window && !reducedMotion) {
 const navLinks = document.querySelectorAll('.site-header nav a[href^="#"]');
 
 if ("IntersectionObserver" in window) {
-  const tracker = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      for (const link of navLinks) {
-        link.classList.toggle("is-active", link.getAttribute("href") === `#${entry.target.id}`);
+  const tracker = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        for (const link of navLinks) {
+          link.classList.toggle(
+            "is-active",
+            link.getAttribute("href") === `#${entry.target.id}`,
+          );
+        }
       }
-    }
-  }, { rootMargin: "-45% 0px -50% 0px" });
+    },
+    { rootMargin: "-45% 0px -50% 0px" },
+  );
 
   for (const section of sections) tracker.observe(section);
 }

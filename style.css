@@ -13,7 +13,7 @@
   --bronze: #8a6a3b;
   --line: rgba(201, 169, 110, 0.22);
   --header-bg: rgba(11, 11, 12, 0.72);
-  --glow: rgba(201, 169, 110, 0.10);
+  --glow: rgba(201, 169, 110, 0.1);
   --error: #e79a88;
   --serif: "Cormorant Garamond", "Times New Roman", serif;
   --sans: "Montserrat", system-ui, sans-serif;
@@ -57,7 +57,9 @@ body {
     radial-gradient(ellipse 80% 60% at 50% 0%, var(--glow), transparent 70%),
     var(--bg);
   color: var(--text);
-  transition: background-color 0.4s ease, color 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease;
   line-height: 1.75;
   letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
@@ -101,7 +103,13 @@ h1 em {
   color: var(--gold);
   border: 1px solid var(--line);
   padding: 5px 11px 5px 15px;
-  background: linear-gradient(120deg, var(--champagne), var(--gold) 40%, var(--rose-gold) 70%, var(--bronze));
+  background: linear-gradient(
+    120deg,
+    var(--champagne),
+    var(--gold) 40%,
+    var(--rose-gold) 70%,
+    var(--bronze)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -139,7 +147,14 @@ h1 em {
   right: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--bronze) 15%, var(--champagne) 50%, var(--rose-gold) 85%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--bronze) 15%,
+    var(--champagne) 50%,
+    var(--rose-gold) 85%,
+    transparent
+  );
   opacity: 0.6;
 }
 
@@ -247,19 +262,38 @@ main {
 
 .hero h1 .first {
   letter-spacing: 0.02em;
-  background-image: linear-gradient(110deg, var(--champagne) 10%, var(--gold-light) 35%, var(--text) 55%, var(--gold) 75%, var(--champagne) 90%);
+  background-image: linear-gradient(
+    110deg,
+    var(--champagne) 10%,
+    var(--gold-light) 35%,
+    var(--text) 55%,
+    var(--gold) 75%,
+    var(--champagne) 90%
+  );
 }
 
 .hero h1 .last {
   font-style: italic;
-  background-image: linear-gradient(110deg, var(--bronze), var(--gold) 25%, var(--champagne) 45%, var(--rose-gold) 65%, var(--gold-dark) 85%, var(--bronze));
+  background-image: linear-gradient(
+    110deg,
+    var(--bronze),
+    var(--gold) 25%,
+    var(--champagne) 45%,
+    var(--rose-gold) 65%,
+    var(--gold-dark) 85%,
+    var(--bronze)
+  );
   animation-delay: -3s;
 }
 
 /* The colours slowly drift across the letters, like light moving over metal */
 @keyframes shimmer {
-  from { background-position: 0% 50%; }
-  to { background-position: 100% 50%; }
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
 }
 
 .rule {
@@ -330,7 +364,9 @@ main {
 }
 
 @keyframes scroll-line {
-  to { top: 100%; }
+  to {
+    top: 100%;
+  }
 }
 
 /* Buttons */
@@ -342,11 +378,20 @@ main {
   letter-spacing: 0.25em;
   text-transform: uppercase;
   text-decoration: none;
-  transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+  transition:
+    background 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
 }
 
 .btn-gold {
-  background: linear-gradient(120deg, var(--gold-dark), var(--gold) 50%, var(--gold-light));
+  background: linear-gradient(
+    120deg,
+    var(--gold-dark),
+    var(--gold) 50%,
+    var(--gold-light)
+  );
   color: #14110b;
   border: 1px solid var(--gold);
 }
@@ -369,14 +414,28 @@ main {
 .section {
   padding: clamp(80px, 12vw, 140px) 0;
   border-top: 1px solid;
-  border-image: linear-gradient(90deg, transparent, var(--bronze) 20%, var(--champagne) 50%, var(--rose-gold) 80%, transparent) 1;
+  border-image: linear-gradient(
+      90deg,
+      transparent,
+      var(--bronze) 20%,
+      var(--champagne) 50%,
+      var(--rose-gold) 80%,
+      transparent
+    )
+    1;
 }
 
 /* Fading gold text for the headings in the page content */
 .display,
 .timeline-item .display-sm,
 .section-label .num {
-  background-image: linear-gradient(110deg, var(--champagne), var(--gold) 40%, var(--rose-gold) 75%, var(--gold-dark));
+  background-image: linear-gradient(
+    110deg,
+    var(--champagne),
+    var(--gold) 40%,
+    var(--rose-gold) 75%,
+    var(--gold-dark)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -410,7 +469,12 @@ main {
   content: "";
   flex: 0 0 60px;
   height: 1px;
-  background: linear-gradient(90deg, var(--champagne), var(--gold-dark), transparent);
+  background: linear-gradient(
+    90deg,
+    var(--champagne),
+    var(--gold-dark),
+    transparent
+  );
 }
 
 .section-label.center {
@@ -551,7 +615,15 @@ main {
   padding: 32px 0;
   border-top: 1px solid;
   border-bottom: 1px solid;
-  border-image: linear-gradient(90deg, transparent, var(--gold-dark) 20%, var(--champagne) 50%, var(--rose-gold) 80%, transparent) 1;
+  border-image: linear-gradient(
+      90deg,
+      transparent,
+      var(--gold-dark) 20%,
+      var(--champagne) 50%,
+      var(--rose-gold) 80%,
+      transparent
+    )
+    1;
   text-align: center;
 }
 
@@ -566,7 +638,12 @@ main {
   font-weight: 300;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  background-image: linear-gradient(110deg, var(--champagne), var(--gold) 45%, var(--rose-gold));
+  background-image: linear-gradient(
+    110deg,
+    var(--champagne),
+    var(--gold) 45%,
+    var(--rose-gold)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -597,7 +674,13 @@ main {
   bottom: 8px;
   left: 5px;
   width: 1px;
-  background: linear-gradient(var(--champagne), var(--gold) 30%, var(--rose-gold) 65%, var(--bronze) 90%, transparent);
+  background: linear-gradient(
+    var(--champagne),
+    var(--gold) 30%,
+    var(--rose-gold) 65%,
+    var(--bronze) 90%,
+    transparent
+  );
 }
 
 .timeline-item {
@@ -724,7 +807,9 @@ main {
 .section.will-reveal {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 .section.will-reveal.is-visible {
@@ -755,8 +840,19 @@ main {
   width: 140px;
   height: 1px;
   transform: translateX(-50%);
-  background: linear-gradient(90deg,
-    #5bcefa, #f5a9b8, #e40303, #ff8c00, #ffed00, #008026, #24408e, #732982, #f5a9b8, #5bcefa);
+  background: linear-gradient(
+    90deg,
+    #5bcefa,
+    #f5a9b8,
+    #e40303,
+    #ff8c00,
+    #ffed00,
+    #008026,
+    #24408e,
+    #732982,
+    #f5a9b8,
+    #5bcefa
+  );
   opacity: 0.75;
 }
 
@@ -776,12 +872,25 @@ main {
 }
 
 @keyframes pride-cycle {
-  0%, 100% { color: #e40303; }
-  17% { color: #ff8c00; }
-  33% { color: #ffed00; }
-  50% { color: #008026; }
-  67% { color: #24408e; }
-  83% { color: #732982; }
+  0%,
+  100% {
+    color: #e40303;
+  }
+  17% {
+    color: #ff8c00;
+  }
+  33% {
+    color: #ffed00;
+  }
+  50% {
+    color: #008026;
+  }
+  67% {
+    color: #24408e;
+  }
+  83% {
+    color: #732982;
+  }
 }
 
 /* Hero entrance animation */
@@ -791,9 +900,15 @@ main {
   animation: reveal 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
 
-.delay-1 { animation-delay: 0.15s; }
-.delay-2 { animation-delay: 0.35s; }
-.delay-3 { animation-delay: 0.55s; }
+.delay-1 {
+  animation-delay: 0.15s;
+}
+.delay-2 {
+  animation-delay: 0.35s;
+}
+.delay-3 {
+  animation-delay: 0.55s;
+}
 
 @keyframes reveal {
   to {
@@ -803,14 +918,26 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .reveal { animation: none; opacity: 1; transform: none; }
+  html {
+    scroll-behavior: auto;
+  }
+  .reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
   .hero h1 .first,
-  .hero h1 .last { animation: none; }
-  .scroll-cue span { animation: none; }
+  .hero h1 .last {
+    animation: none;
+  }
+  .scroll-cue span {
+    animation: none;
+  }
   .logo:hover .amp,
   .site-footer .monogram:hover .amp,
-  .form-success { animation: none; }
+  .form-success {
+    animation: none;
+  }
 }
 
 /* Small screens */
