@@ -1095,6 +1095,35 @@ main {
   padding: 12px 24px;
 }
 
+/* Make "hidden" always win on this page. Without it, .btn's display rule
+   would keep hidden buttons visible. */
+.admin [hidden] {
+  display: none !important;
+}
+
+/* The "Delete for good? Yes / Cancel" row */
+.admin-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-confirm-text {
+  color: var(--error);
+  font-size: 0.9rem;
+}
+
+.admin-action-status {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.admin-action-status:empty {
+  display: none;
+}
+
 /* Hero entrance animation — each part starts invisible and slightly low,
    then rises into place. The delay classes stagger them one after another.
    "forwards" keeps the final state after the animation ends. */

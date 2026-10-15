@@ -111,30 +111,60 @@ function renderMessage(message) {
     timeStyle: "short",
   });
 
-  // "Reply" opens your email app, with the subject already filled in.
-  // encodeURIComponent makes the text safe to put inside a link.
-  const subject = encodeURIComponent(`Re: ${message.reason}`);
-  find(".admin-reply").href = `mailto:${message.email}?subject=${subject}`;
+  // "Reply in Gmail" opens Gmail's "new email" screen in a new tab, with the
+  // address and subject filled in. (A mailto: link would need an email app
+  // installed on the computer, which Gmail-in-the-browser users don't have.)
+  // URLSearchParams builds the "?to=...&su=..." part and makes the text safe
+  // to put inside a link.
+  const gmail = new URLSearchParams({
+    view: "cm", // "compose"
+    fs: "1", // full-screen compose window
+    to: message.email,
+    su: `Re: ${message.reason}`, // subject
+  });
+  find(".admin-reply").href = `https://mail.google.com/mail/?${gmail}`;
 
-  find(".admin-delete").addEventListener("click", () =>
-    deleteMessage(message, card),
+  const status = find(".admin-action-status");
+  const deleteButton = find(".admin-delete");
+  const confirmBox = find(".admin-confirm");
+
+  // "Copy email" puts the address on the clipboard, for any email program
+  find(".admin-copy").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(message.email);
+      status.textContent = "Email address copied.";
+    } catch {
+      status.textContent = "Couldn't copy. Select the address above instead.";
+    }
+  });
+
+  // Delete is two steps, both on the page (browser pop-ups can be blocked):
+  // 1. "Delete" swaps itself for "Delete for good? Yes / Cancel"
+  deleteButton.addEventListener("click", () => {
+    deleteButton.hidden = true;
+    confirmBox.hidden = false;
+    find(".admin-confirm-no").focus();
+  });
+  find(".admin-confirm-no").addEventListener("click", () => {
+    confirmBox.hidden = true;
+    deleteButton.hidden = false;
+    deleteButton.focus();
+  });
+  // 2. "Yes, delete" actually deletes
+  find(".admin-confirm-yes").addEventListener("click", () =>
+    deleteMessage(message, status),
   );
   return card;
 }
 
-// Deletes a message after asking for confirmation (it can't be undone)
-async function deleteMessage(message, card) {
-  if (
-    !confirm(`Delete the message from ${message.name}? This can't be undone.`)
-  ) {
-    return;
-  }
+// Asks the server to delete one message (it can't be undone), then reloads the list
+async function deleteMessage(message, status) {
+  status.textContent = "Deleting…";
   try {
     await api(`/api/admin/messages/${message.id}`, { method: "DELETE" });
-    card.remove();
-    await loadMessages(); // Refresh the list and the count
+    await loadMessages(); // Redraw the list and the count without it
   } catch (error) {
-    alert(error.message);
+    status.textContent = error.message;
   }
 }
 
