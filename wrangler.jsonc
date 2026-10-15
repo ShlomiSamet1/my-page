@@ -1,0 +1,33 @@
+// wrangler.jsonc — settings for the server on Cloudflare.
+// "jsonc" = JSON with Comments, a JSON variant that does allow comments.
+// Nothing secret goes in this file: it's uploaded to GitHub.
+{
+  // The server's name; online it becomes my-page-api.<your-account>.workers.dev
+  "name": "my-page-api",
+  // The file containing the server code
+  "main": "worker/index.js",
+  // Which version of Cloudflare's runtime the code was written for
+  "compatibility_date": "2026-10-01",
+
+  // Public settings, available in the code as env.<NAME>
+  "vars": {
+    // Websites allowed to call the server, separated by commas:
+    // the live site on GitHub Pages, and the local test site
+    "ALLOWED_ORIGINS": "https://shlomisamet1.github.io,http://localhost:5173",
+  },
+
+  // The database, available in the code as env.DB
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "my-page-db",
+      // Filled in after `wrangler d1 create my-page-db` (online setup step).
+      // Locally, any value works.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+
+  // Keep a record of requests and errors, viewable in the Cloudflare dashboard
+  "observability": { "enabled": true },
+}

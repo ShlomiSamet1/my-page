@@ -3,10 +3,16 @@
     "JSON cannot contain comments, so npm ignores any key named \"//\" and we use it for notes.",
     "This file is the project record card: name, version, description, commands and packages used.",
     "scripts: shortcuts. Run with `npm run <name>` (in PowerShell: `npm.cmd run <name>`).",
-    "  check  = list files whose formatting Prettier would tidy (changes nothing)",
-    "  format = tidy the formatting of every file",
+    "  check     = list files whose formatting Prettier would tidy (changes nothing)",
+    "  format    = tidy the formatting of every file",
+    "  site      = show the website at http://localhost:5173",
+    "  server    = run the server at http://localhost:8787 (reads secrets from .env)",
+    "  db:local  = create the database tables on this computer (once)",
+    "  db:online = create the database tables on Cloudflare (once)",
+    "  deploy    = put the server online on Cloudflare",
     "devDependencies: packages used only while building, never sent to visitors.",
-    "  ^3.9.10 = version 3.9.10 or any newer 3.x (never 4.0, which could break things).",
+    "  prettier = tidies code formatting; wrangler = Cloudflare tool that runs and uploads the server",
+    "  ^ before a version = that version or any newer one with the same first number.",
     "private: true stops the project from being published to npm by accident."
   ],
   "name": "my-page",
@@ -14,7 +20,12 @@
   "description": "Shlomi Samet's personal web page",
   "scripts": {
     "format": "prettier --write .",
-    "check": "prettier --check ."
+    "check": "prettier --check .",
+    "site": "node tools/dev-server.js",
+    "server": "wrangler dev",
+    "db:local": "wrangler d1 migrations apply my-page-db --local",
+    "db:online": "wrangler d1 migrations apply my-page-db --remote",
+    "deploy": "wrangler deploy"
   },
   "repository": {
     "type": "git",
@@ -28,7 +39,8 @@
   },
   "homepage": "https://github.com/ShlomiSamet1/my-page#readme",
   "devDependencies": {
-    "prettier": "^3.9.10"
+    "prettier": "^3.9.10",
+    "wrangler": "^4.151.0"
   },
   "private": true
 }

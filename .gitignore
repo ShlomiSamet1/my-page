@@ -1,1 +1,11 @@
+# .gitignore — files and folders git should never upload to GitHub
+
+# Downloaded package code; recreate it any time with `npm install`
 node_modules/
+
+# Secrets: the API key and admin password. Must never be uploaded.
+.env
+.dev.vars
+
+# Wrangler's local working files, including the local test database
+.wrangler/
