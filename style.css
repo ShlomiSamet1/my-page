@@ -1243,14 +1243,20 @@ main {
   }
 }
 
-/* Narrower screens: the search moves to its own row under the menu links */
+/* Narrower screens: logo, links and theme button share the top row, and the
+   search gets its own full-width row underneath */
 @media (max-width: 720px) {
-  .site-header nav {
-    flex: 1;
-    min-width: 0; /* Allowed to shrink to fit, instead of spilling off-screen */
+  .site-header {
     flex-wrap: wrap;
-    justify-content: flex-end;
+    column-gap: clamp(16px, 3vw, 40px);
     row-gap: 10px;
+  }
+  /* "contents" lets the menu's items line up directly in the header row */
+  .site-header nav {
+    display: contents;
+  }
+  .logo {
+    margin-right: auto; /* Pushes the links and button to the right */
   }
   .site-search {
     order: 1; /* Last in the row = drops below the links */
