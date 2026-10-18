@@ -261,6 +261,65 @@ h1 em {
   transform: rotate(180deg);
 }
 
+/* Site search in the header: label, box and "1 of N" counter in a row */
+.site-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Same small capitals as the menu links */
+.site-search label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.site-search input {
+  width: 150px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  transition: border-color 0.3s ease;
+}
+
+.site-search input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.search-count {
+  font-size: 0.7rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Take no space while there's nothing to say */
+.search-count:empty {
+  display: none;
+}
+
+/* Every match: a soft gold wash. The text colour is set explicitly because
+   gold headings make their own letters transparent (see "Gold-text technique") */
+mark.search-hit {
+  background: var(--line);
+  color: var(--text);
+  -webkit-text-fill-color: currentColor;
+}
+
+/* The match you're on: solid gold */
+mark.search-hit.is-current {
+  background: var(--gold);
+  color: var(--bg);
+}
+
 /* Main content column: at most 1100px wide, centred (margin auto) */
 main {
   max-width: 1100px;
@@ -1181,5 +1240,24 @@ main {
   .btn {
     width: 100%;
     text-align: center;
+  }
+}
+
+/* Narrower screens: the search moves to its own row under the menu links */
+@media (max-width: 720px) {
+  .site-header nav {
+    flex: 1;
+    min-width: 0; /* Allowed to shrink to fit, instead of spilling off-screen */
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 10px;
+  }
+  .site-search {
+    order: 1; /* Last in the row = drops below the links */
+    flex: 1 1 100%;
+  }
+  .site-search input {
+    flex: 1;
+    width: 0; /* Start from nothing and grow to fill the row */
   }
 }
