@@ -1,9 +1,10 @@
 // script.js — the page's behaviour (everything that moves or reacts).
-// It has four parts:
+// It has five parts:
 //   1. Light / dark theme toggle
 //   2. Sections fading in as you scroll
 //   3. Stats counting up from zero
 //   4. Highlighting the menu link of the section you're reading
+//   5. Site search, like a friendly Ctrl+F
 // index.html loads this file with "defer", so it runs only after the whole
 // page has been built — that's why it can safely look up elements by class.
 
@@ -166,3 +167,108 @@ if ("IntersectionObserver" in window) {
 
   for (const section of sections) tracker.observe(section);
 }
+
+// ─── 5. Site search — finds words on the page, like a friendly Ctrl+F ───
+// Each match is wrapped in a <mark class="search-hit">; the one you're on
+// also gets "is-current". Clearing removes the marks again, leaving the
+// page exactly as it was.
+
+const searchBox = document.querySelector("#site-search");
+const searchCount = document.querySelector("#site-search-count");
+let hits = []; // The <mark> elements of the current search
+let current = 0; // Position in hits of the match you're on
+
+// Removes every <mark>, putting its text back where it was
+function clearHits() {
+  for (const mark of hits) {
+    const parent = mark.parentNode;
+    if (!parent) continue; // Already gone (e.g. a stat number re-counted)
+    mark.replaceWith(...mark.childNodes);
+    parent.normalize(); // Glue the split pieces of text back together
+  }
+  hits = [];
+  searchCount.textContent = "";
+}
+
+// Every piece of visible text in <main>, except the contact form,
+// hidden parts and decoration
+function visibleText() {
+  const main = document.querySelector("main");
+  const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    const skip = node.parentElement.closest(
+      "form, [hidden], [aria-hidden='true']",
+    );
+    if (!skip && node.data.trim()) nodes.push(node);
+  }
+  return nodes;
+}
+
+// Moves to match number i (wraps around at both ends) and scrolls to it
+function goTo(i) {
+  hits[current].classList.remove("is-current");
+  current = (i + hits.length) % hits.length;
+  const mark = hits[current];
+  mark.classList.add("is-current");
+  // If its section hasn't faded in yet, show it now
+  mark.closest(".will-reveal")?.classList.add("is-visible");
+  // "center" keeps it well clear of the sticky header
+  mark.scrollIntoView({
+    block: "center",
+    behavior: reducedMotion ? "auto" : "smooth",
+  });
+  searchCount.textContent = `${current + 1} of ${hits.length}`;
+}
+
+// Runs on every keystroke in the box
+function search() {
+  clearHits();
+  const query = searchBox.value.trim().toLowerCase();
+  if (query.length < 2) return; // Wait for at least 2 characters
+
+  for (const node of visibleText()) {
+    let rest = node;
+    let at;
+    // Split the text around each match and wrap the match in a <mark>
+    while ((at = rest.data.toLowerCase().indexOf(query)) !== -1) {
+      const match = rest.splitText(at);
+      rest = match.splitText(query.length);
+      const mark = document.createElement("mark");
+      mark.className = "search-hit";
+      match.replaceWith(mark);
+      mark.append(match);
+      hits.push(mark);
+    }
+  }
+
+  current = 0;
+  if (hits.length > 0) goTo(0);
+  else searchCount.textContent = "No results";
+}
+
+searchBox.addEventListener("input", search);
+
+// Enter = next match, Shift+Enter = previous, Esc = clear everything
+searchBox.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && hits.length > 0) {
+    event.preventDefault();
+    goTo(current + (event.shiftKey ? -1 : 1));
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    searchBox.value = "";
+    clearHits();
+  }
+});
+
+// Pressing "/" anywhere jumps to the search box — unless you're typing somewhere
+document.addEventListener("keydown", (event) => {
+  const typing = event.target.closest(
+    "input, textarea, select, [contenteditable]",
+  );
+  if (event.key === "/" && !typing && !event.ctrlKey && !event.metaKey) {
+    event.preventDefault(); // Don't type the "/" itself
+    searchBox.focus();
+  }
+});

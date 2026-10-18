@@ -53,6 +53,21 @@
       <nav>
         <a href="#journey">Journey</a>
         <a href="#contact" class="nav-cta">Contact</a>
+        <!-- Page search, like a friendly Ctrl+F (script.js makes it work).
+             Same pattern as the contact form fields: a <label>, the box, and
+             a line that screen readers read aloud ("1 of 5" / "No results"). -->
+        <div class="site-search" role="search">
+          <label for="site-search">Search</label>
+          <input
+            id="site-search"
+            type="search"
+            placeholder="Press /"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="site-search-count"
+          />
+          <p id="site-search-count" class="search-count" aria-live="polite"></p>
+        </div>
         <!-- Light / dark theme button (script.js makes it work) -->
         <button
           type="button"
