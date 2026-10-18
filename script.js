@@ -105,6 +105,7 @@ function countUp(el) {
 
   // One animation frame. The browser passes in the current time.
   function step(now) {
+    if (el.dataset.done) return; // Already finished early by the search (part 5)
     // Fraction of the animation done: 0 at the start, capped at 1 at the end
     const progress = Math.min((now - start) / duration, 1);
     // Ease-out curve, written as the formula 1 − (1 − progress)³
@@ -119,12 +120,22 @@ function countUp(el) {
   requestAnimationFrame(step);
 }
 
+// Jumps every number straight to its final value and stops any counting.
+// The search (part 5) calls this so it can find the real numbers ("20+"),
+// and so a counting number can't wipe out a highlighted match.
+function finishStats() {
+  for (const el of statNumbers) {
+    el.dataset.done = "true";
+    el.textContent = el.dataset.count + (el.dataset.suffix || "");
+  }
+}
+
 if ("IntersectionObserver" in window && !reducedMotion) {
   const counter = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          countUp(entry.target);
+          if (!entry.target.dataset.done) countUp(entry.target);
           counter.unobserve(entry.target); // Count up only once
         }
       }
@@ -227,6 +238,7 @@ function search() {
   clearHits();
   const query = searchBox.value.trim().toLowerCase();
   if (query.length < 2) return; // Wait for at least 2 characters
+  finishStats(); // Show the real numbers so they can be found too
 
   for (const node of visibleText()) {
     let rest = node;

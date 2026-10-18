@@ -10,7 +10,7 @@ const fs = require("fs"); // Reading files
 const path = require("path"); // Working with file paths
 
 const ROOT = path.join(__dirname, ".."); // The project folder
-const PORT = 5173;
+const PORT = process.env.PORT || 5173; // 5173 unless another port is given
 // Tells the browser what kind of file it's receiving
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -47,5 +47,12 @@ http
       response.writeHead(200, { "Content-Type": type });
       response.end(content);
     });
+  })
+  // If the address is already taken, the site is most likely already running
+  // (e.g. in another terminal), so explain that instead of crashing
+  .on("error", (error) => {
+    if (error.code !== "EADDRINUSE") throw error;
+    console.log(`Port ${PORT} is busy: the site is probably already running.`);
+    console.log(`Open http://localhost:${PORT}, or stop the other one first.`);
   })
   .listen(PORT, () => console.log(`Site running at http://localhost:${PORT}`));
