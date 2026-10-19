@@ -1,9 +1,12 @@
 <!doctype html>
 <!--
-  admin.html — the Admin page, where you read messages sent through the contact form.
+  admin.html — the Admin page. After logging in it has two tabs:
+    - Messages: what visitors sent through the contact form (from the server)
+    - Tasks: your own to-do list (saved in this browser only)
   Anyone can open this page, but it shows nothing until the right password is
   entered: the messages come from the server, and the server only hands them
-  over after checking the password. The logic is in admin.js.
+  over after checking the password. The logic is in admin.js (login, tabs,
+  messages) and tasks.js (the to-do list).
 -->
 <html lang="en">
   <head>
@@ -67,25 +70,163 @@
         </form>
       </section>
 
-      <!-- Step 2: the messages. Hidden until logged in. -->
-      <section class="admin-inbox" hidden aria-labelledby="inbox-title">
-        <div class="admin-toolbar">
-          <h1 id="inbox-title" class="display">Messages</h1>
-          <div class="admin-actions">
+      <!-- Step 2: the admin area. Hidden until logged in. -->
+      <div class="admin-area" hidden>
+        <!-- The two tabs, with Log out on the right. role="tab" etc. tell
+             screen readers these buttons switch between panels. Arrow keys
+             move between tabs (admin.js). The small number is a live count. -->
+        <div class="admin-bar">
+          <div class="admin-tabs" role="tablist" aria-label="Admin sections">
+            <button
+              type="button"
+              role="tab"
+              class="admin-tab"
+              id="tab-messages"
+              aria-controls="panel-messages"
+              aria-selected="true"
+            >
+              Messages <span class="tab-badge" id="messages-badge"></span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              class="admin-tab"
+              id="tab-tasks"
+              aria-controls="panel-tasks"
+              aria-selected="false"
+              tabindex="-1"
+            >
+              Tasks <span class="tab-badge" id="tasks-badge"></span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-line" id="logout">
+            Log out
+          </button>
+        </div>
+
+        <!-- Tab 1: the messages -->
+        <section
+          class="admin-panel admin-inbox"
+          id="panel-messages"
+          role="tabpanel"
+          aria-labelledby="tab-messages"
+        >
+          <div class="admin-toolbar">
+            <h1 class="display">Messages</h1>
             <button type="button" class="btn btn-line" id="refresh">
               Refresh
             </button>
-            <button type="button" class="btn btn-line" id="logout">
-              Log out
-            </button>
           </div>
-        </div>
-        <!-- e.g. "3 messages"; aria-live announces changes to screen readers -->
-        <p class="admin-count" aria-live="polite"></p>
-        <!-- admin.js fills this list with one card per message -->
-        <ol class="admin-list"></ol>
-      </section>
+          <!-- e.g. "3 messages"; aria-live announces changes to screen readers -->
+          <p class="admin-count" aria-live="polite"></p>
+          <!-- admin.js fills this list with one card per message -->
+          <ol class="admin-list"></ol>
+        </section>
+
+        <!-- Tab 2: the to-do list (tasks.js makes it work) -->
+        <section
+          class="admin-panel tasks"
+          id="panel-tasks"
+          role="tabpanel"
+          aria-labelledby="tab-tasks"
+          hidden
+        >
+          <div class="admin-toolbar">
+            <h1 class="display">Tasks</h1>
+            <!-- e.g. "2 of 5 done", with a thin gold bar filling up -->
+            <div class="task-progress">
+              <p class="task-progress-text"></p>
+              <span class="task-progress-track" aria-hidden="true">
+                <span class="task-progress-fill"></span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Type a task and press Add or Enter (it's a real form) -->
+          <form id="task-form" class="task-form" autocomplete="off">
+            <div class="field">
+              <label for="task-input">New task</label>
+              <input
+                id="task-input"
+                type="text"
+                maxlength="200"
+                placeholder="What needs doing?"
+              />
+            </div>
+            <button type="submit" class="btn btn-gold">Add</button>
+          </form>
+
+          <!-- Show all / only the open ones / only the finished ones -->
+          <div class="task-bar">
+            <div class="task-filters" role="group" aria-label="Show tasks">
+              <button type="button" data-filter="all" aria-pressed="true">
+                All
+              </button>
+              <button type="button" data-filter="active" aria-pressed="false">
+                To do
+              </button>
+              <button type="button" data-filter="done" aria-pressed="false">
+                Done
+              </button>
+            </div>
+            <button type="button" class="task-clear">Clear done</button>
+          </div>
+
+          <!-- tasks.js fills this list, one <li> per task -->
+          <ul class="task-list" aria-label="Tasks"></ul>
+          <!-- Shown only when there's nothing to list -->
+          <p class="task-empty" hidden></p>
+          <p class="task-hint">
+            Double-click a task to edit it. Drag
+            <span aria-hidden="true">⠿</span> to reorder, or focus it and use
+            the ↑ ↓ arrow keys.
+          </p>
+          <!-- Read aloud to screen readers, e.g. "Moved to position 2 of 4" -->
+          <p class="sr-only" id="task-announce" aria-live="polite"></p>
+        </section>
+      </div>
     </main>
+
+    <!-- "Task deleted · Undo" pop-up at the bottom of the screen -->
+    <div class="task-toast" role="status" hidden>
+      <span class="task-toast-text"></span>
+      <button type="button" class="task-toast-undo">Undo</button>
+    </div>
+
+    <!-- A blueprint for one task. tasks.js copies it for each task. -->
+    <template id="task-template">
+      <li class="task-item">
+        <!-- Grab here to drag; or focus it and press ↑ / ↓ -->
+        <button type="button" class="task-handle">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="5.5" cy="3.5" r="1.2" />
+            <circle cx="10.5" cy="3.5" r="1.2" />
+            <circle cx="5.5" cy="8" r="1.2" />
+            <circle cx="10.5" cy="8" r="1.2" />
+            <circle cx="5.5" cy="12.5" r="1.2" />
+            <circle cx="10.5" cy="12.5" r="1.2" />
+          </svg>
+        </button>
+        <!-- A real checkbox (works with keyboard and screen readers), drawn
+             as a gold square by style.css -->
+        <input type="checkbox" class="task-check" />
+        <span class="task-text"></span>
+        <!-- Shown instead of the text while editing -->
+        <input type="text" class="task-edit" maxlength="200" hidden />
+        <div class="task-actions">
+          <button type="button" class="task-icon task-edit-btn">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M11 2.5l2.5 2.5L6 12.5H3.5V10z" />
+            </svg>
+          </button>
+          <button type="button" class="task-icon task-delete">
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8" />
+            </svg>
+          </button>
+        </div>
+      </li>
+    </template>
 
     <!-- A blueprint for one message card. <template> isn't shown on the page;
          admin.js copies it for each message and fills in the text. -->
