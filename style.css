@@ -1183,6 +1183,57 @@ main {
   display: none;
 }
 
+/* ─── Task list (tasks.html) ─── */
+
+.tasks {
+  max-width: 640px;
+  padding-top: clamp(48px, 8vw, 96px);
+  padding-bottom: 96px;
+}
+
+/* Text box and Add button side by side, bottoms lined up. On phones the
+   button wraps onto its own line below the box. */
+.task-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 32px 0;
+}
+
+/* The box grows to fill the row, but is never narrower than 240px */
+.task-form .field {
+  flex: 1 1 240px;
+  margin-bottom: 0;
+}
+
+/* <button>s don't inherit the font by default (same fix as the Admin page) */
+.task-form .btn {
+  font-family: inherit;
+  cursor: pointer;
+  padding: 15px 28px;
+  background-color: var(--gold);
+}
+
+.task-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+/* One task: a thin gold-edged card. anywhere breaks very long words. */
+.task-item {
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.task-empty {
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* Hero entrance animation — each part starts invisible and slightly low,
    then rises into place. The delay classes stagger them one after another.
    "forwards" keeps the final state after the animation ends. */

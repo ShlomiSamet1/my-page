@@ -1,0 +1,63 @@
+<!doctype html>
+<!--
+  tasks.html — a small to-do list. Add tasks and see them in a list.
+  The tasks are saved in this browser only (localStorage), not on the server,
+  so each visitor sees just their own list. The logic is in tasks.js.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tasks · Shlomi Samet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      // Apply the saved theme before the page paints (same as index.html)
+      try {
+        if (localStorage.getItem("theme") === "light") {
+          document.documentElement.dataset.theme = "light";
+        }
+      } catch (e) {}
+    </script>
+    <script src="tasks.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="index.html" class="logo" aria-label="Back to the site">
+        <span class="monogram">S<span class="amp">·</span>S</span>
+      </a>
+      <nav>
+        <a href="index.html">Back to site</a>
+      </nav>
+    </header>
+
+    <main class="tasks">
+      <div class="section-label"><span class="num">—</span> Tasks</div>
+      <h1 class="display">My tasks</h1>
+
+      <!-- Type a task and press Add (or Enter — it's a real form) -->
+      <form id="task-form" class="task-form" autocomplete="off">
+        <div class="field">
+          <label for="task-input">New task</label>
+          <input
+            id="task-input"
+            type="text"
+            maxlength="200"
+            placeholder="e.g. Call the bank"
+          />
+        </div>
+        <button type="submit" class="btn btn-gold">Add</button>
+      </form>
+
+      <!-- tasks.js fills this list, one <li> per task -->
+      <ul class="task-list"></ul>
+      <!-- Shown only while the list is empty -->
+      <p class="task-empty" hidden>No tasks yet — add your first one above.</p>
+    </main>
+  </body>
+</html>
