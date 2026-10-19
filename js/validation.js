@@ -8,7 +8,7 @@
 // "export" in front of a const or function makes it available to other files,
 // which bring it in with "import { ... } from "./validation.js"".
 //   - contact-form.js (in the browser) imports it
-//   - worker/index.js (on the server) imports it
+//   - server/index.js (on the server) imports it
 
 // ─── 1. Settings ───
 

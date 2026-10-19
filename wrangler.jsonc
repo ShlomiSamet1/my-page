@@ -5,7 +5,7 @@
   // The server's name; online it becomes my-page-api.<your-account>.workers.dev
   "name": "my-page-api",
   // The file containing the server code
-  "main": "worker/index.js",
+  "main": "server/index.js",
   // Which version of Cloudflare's runtime the code was written for
   "compatibility_date": "2026-10-01",
 
@@ -24,7 +24,7 @@
       // The online database's ID (from `wrangler d1 create my-page-db`).
       // Not secret: only this Cloudflare account can use it.
       "database_id": "a723f50b-38a8-42e6-ac69-bd04faac3032",
-      "migrations_dir": "migrations",
+      "migrations_dir": "server/migrations",
     },
   ],
 
