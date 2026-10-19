@@ -1,4 +1,4 @@
-// worker/index.js — the server (the "API") for the contact form and Admin page.
+// server/index.js — the server (the "API") for the contact form and Admin page.
 //
 // It runs on Cloudflare Workers: Cloudflare keeps this code ready on its
 // computers, and runs the fetch() function below every time a request arrives.
@@ -18,7 +18,7 @@
 //   env.ALLOWED_ORIGINS the websites allowed to call this server (wrangler.jsonc)
 // None of the secrets are ever sent back in a response.
 
-import { validateContact, REASONS } from "../validation.js";
+import { validateContact, REASONS } from "../js/validation.js";
 
 // ─── Settings ───
 

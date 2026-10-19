@@ -23,7 +23,7 @@
       rel="stylesheet"
     />
     <!-- Our own styling -->
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/style.css" />
     <script>
       // Apply the saved theme before the page paints, so it doesn't flash
       // (script.js saves the choice in localStorage when the toggle is clicked)
@@ -35,10 +35,10 @@
     </script>
     <!-- Our JavaScript files. "defer" = download now, but run only after the
          whole page is built, so the code can find every element it needs. -->
-    <script src="script.js" defer></script>
+    <script src="js/script.js" defer></script>
     <!-- type="module" lets contact-form.js import the shared rules from
          validation.js. Modules always wait for the page, like "defer". -->
-    <script src="contact-form.js" type="module"></script>
+    <script src="js/contact-form.js" type="module"></script>
   </head>
   <!-- <body>: everything visible on the page -->
   <body>
