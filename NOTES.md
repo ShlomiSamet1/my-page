@@ -23,11 +23,15 @@ Page structure and content. Sticky header (logo, nav, theme toggle), hero (name,
 
 ### admin.html + admin.js
 
-The Admin page for reading messages. Anyone can open it, but it shows nothing until the server accepts the password. On login the server returns a token (a temporary pass, valid 8 hours), kept in `sessionStorage` and sent with each request; the password itself is never stored. Lists messages newest first with Reply (opens your email app) and Delete. Messages are written as plain text only, so nothing a visitor types can run as code.
+The Admin page for reading messages. Anyone can open it, but it shows nothing until the server accepts the password. On login the server returns a token (a temporary pass, valid 8 hours), kept in `sessionStorage` and sent with each request; the password itself is never stored. After login there are two tabs, Messages and Tasks (arrow keys switch between them; the last one used is remembered), each with a small live count. Messages lists messages newest first with Reply in Gmail, Copy email and Delete. Messages are written as plain text only, so nothing a visitor types can run as code.
+
+### tasks.js
+
+The to-do list on the Admin page's Tasks tab (imported by `admin.js`). Add, tick done, edit (double-click or the pencil; Enter saves, Esc cancels), delete with an Undo pop-up (also Ctrl+Z), reorder by dragging the ⠿ handle (mouse or finger) or with ↑ ↓ on the handle, filter All / To do / Done, clear finished tasks, and a progress bar. Saved in `localStorage`, so the list lives in that browser only, not on the server. One `tasks` array is the single source of truth: every change updates it, saves it and redraws the list from it, with rows gliding to their new places.
 
 ### style.css
 
-All visual styling. Colours are CSS variables in `:root`, overridden by `[data-theme="light"]`; dark is the default. Gold gradients (champagne, gold, rose gold, bronze) are applied to text via `background-clip: text` and to lines via `linear-gradient`. Includes the name shimmer and entrance keyframes, a viewport-based hero that fits one screen, the Admin page styles, a mobile breakpoint, and a `prefers-reduced-motion` block that disables animations.
+All visual styling. Colours are CSS variables in `:root`, overridden by `[data-theme="light"]`; dark is the default. Gold gradients (champagne, gold, rose gold, bronze) are applied to text via `background-clip: text` and to lines via `linear-gradient`. Includes the name shimmer and entrance keyframes, a viewport-based hero that fits one screen, the Admin page styles (tabs, task list, Undo pop-up), a mobile breakpoint, and a `prefers-reduced-motion` block that disables animations.
 
 ### script.js
 

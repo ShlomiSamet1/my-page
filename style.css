@@ -1069,11 +1069,6 @@ main {
   gap: 20px;
 }
 
-.admin-actions {
-  display: flex;
-  gap: 12px;
-}
-
 /* Buttons here are <button>s, which don't inherit the font by default */
 .admin .btn {
   font-family: inherit;
@@ -1183,12 +1178,149 @@ main {
   display: none;
 }
 
-/* ─── Task list (tasks.html) ─── */
+/* ─── Admin tabs: Messages / Tasks ─── */
 
-.tasks {
-  max-width: 640px;
-  padding-top: clamp(48px, 8vw, 96px);
-  padding-bottom: 96px;
+/* Hidden from the screen but still read aloud by screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The tabs on the left, Log out on the right, a thin line underneath */
+.admin-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-tabs {
+  display: flex;
+  gap: clamp(16px, 4vw, 36px);
+}
+
+/* Same small capitals as the menu links */
+.admin-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 2px;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.admin-tab:hover,
+.admin-tab[aria-selected="true"] {
+  color: var(--text);
+}
+
+/* The gold underline of the open tab: it grows from the middle */
+.admin-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  transform: scaleX(0);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.admin-tab[aria-selected="true"]::after {
+  transform: scaleX(1);
+}
+
+/* The small count next to each tab's name; takes no space when empty */
+.tab-badge {
+  min-width: 22px;
+  padding: 1px 7px;
+  font-size: 0.65rem;
+  letter-spacing: 0;
+  text-align: center;
+  color: var(--gold-light);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.tab-badge:empty {
+  display: none;
+}
+
+/* width: auto keeps Log out small on phones too (other buttons go full width) */
+.admin-bar .btn {
+  width: auto;
+  padding: 10px 22px;
+  margin-bottom: 8px;
+}
+
+/* Each panel fades in when its tab opens */
+.admin-panel:not([hidden]) {
+  animation: panel-in 0.35s ease;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Visible keyboard focus (only when using the keyboard, not the mouse) */
+.admin-tab:focus-visible,
+.task-filters button:focus-visible,
+.task-clear:focus-visible,
+.task-handle:focus-visible,
+.task-icon:focus-visible,
+.task-check:focus-visible,
+.task-toast-undo:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ─── Tasks tab (tasks.js) ─── */
+
+/* "2 of 5 done" with a thin bar that fills with gold */
+.task-progress {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.task-progress-text {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.task-progress-track {
+  width: 140px;
+  height: 2px;
+  background: var(--line);
+}
+
+.task-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  transition: width 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
 /* Text box and Add button side by side, bottoms lined up. On phones the
@@ -1198,7 +1330,7 @@ main {
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 12px;
-  margin: 32px 0;
+  margin: 28px 0 24px;
 }
 
 /* The box grows to fill the row, but is never narrower than 240px */
@@ -1207,12 +1339,59 @@ main {
   margin-bottom: 0;
 }
 
-/* <button>s don't inherit the font by default (same fix as the Admin page) */
 .task-form .btn {
-  font-family: inherit;
+  padding: 15px 30px;
+}
+
+/* Filters on the left, "Clear done" on the right */
+.task-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* All / To do / Done: one joined group, the chosen one filled with gold */
+.task-filters {
+  display: flex;
+  border: 1px solid var(--line);
+}
+
+.task-filters button,
+.task-clear {
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: none;
+  border: 0;
   cursor: pointer;
-  padding: 15px 28px;
-  background-color: var(--gold);
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.task-filters button + button {
+  border-left: 1px solid var(--line);
+}
+
+.task-filters button:hover,
+.task-clear:hover:not(:disabled) {
+  color: var(--gold-light);
+}
+
+.task-filters button[aria-pressed="true"] {
+  color: #14110b;
+  background: var(--gold);
+}
+
+.task-clear:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .task-list {
@@ -1221,17 +1400,338 @@ main {
   gap: 10px;
 }
 
-/* One task: a thin gold-edged card. anywhere breaks very long words. */
+/* One task: handle · checkbox · text · pencil and × */
 .task-item {
-  padding: 14px 18px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 6px;
   border: 1px solid var(--line);
-  background: var(--surface);
+  background: linear-gradient(160deg, var(--surface), var(--bg-soft));
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.task-item:hover {
+  border-color: rgba(201, 169, 110, 0.45);
+}
+
+/* The six-dot grab handle. touch-action: none lets a finger drag it
+   instead of scrolling the page. */
+.task-handle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 36px;
+  padding: 0;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: grab;
+  touch-action: none;
+  opacity: 0.55;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
+}
+
+.task-handle svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.task-item:hover .task-handle,
+.task-handle:focus-visible {
+  opacity: 1;
+  color: var(--gold);
+}
+
+/* The checkbox, redrawn as a gold-edged square with a tick.
+   appearance: none removes the browser's own look. */
+.task-check {
+  flex: none;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  appearance: none;
+  border: 1px solid var(--gold-dark);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.task-check:hover {
+  border-color: var(--gold);
+}
+
+.task-check:checked {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+/* The tick: a box with only its right and bottom borders, turned 45° */
+.task-check::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border: solid #14110b;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.2s ease;
+}
+
+.task-check:checked::after {
+  transform: rotate(45deg) scale(1);
+}
+
+/* The text takes the free space; long words break instead of overflowing */
+.task-text {
+  flex: 1;
+  min-width: 0;
   overflow-wrap: anywhere;
+  cursor: text;
+  transition: color 0.3s ease;
+}
+
+/* Finished: faded, with a line drawn through */
+.task-item.is-done .task-text {
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--gold-dark);
+}
+
+/* The edit box, sized like the text it replaces */
+.task-edit {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--gold);
+  border-radius: 0;
+  outline: none;
+}
+
+.task-item.is-editing {
+  border-color: var(--gold);
+}
+
+.task-actions {
+  flex: none;
+  display: flex;
+  gap: 2px;
+}
+
+/* Pencil and × — quiet until the row is hovered or focused */
+.task-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
+}
+
+.task-icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.task-item:hover .task-icon,
+.task-item:focus-within .task-icon {
+  opacity: 1;
+}
+
+.task-edit-btn:hover {
+  color: var(--gold-light);
+}
+
+.task-delete:hover {
+  color: var(--error);
+}
+
+.task-item.is-editing .task-actions {
+  display: none;
+}
+
+/* A new task slides in; a removed one fades out */
+.task-item.is-new {
+  animation: task-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes task-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.task-item.is-leaving {
+  opacity: 0;
+  transform: translateX(16px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+/* While dragging: the other rows slide aside smoothly; the held row floats
+   above them, follows the pointer instantly and casts a soft shadow */
+.task-list.is-sorting {
+  user-select: none;
+}
+
+.task-list.is-sorting .task-item {
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.task-list.is-sorting .task-item.is-dragging {
+  z-index: 2;
+  transition: none;
+  border-color: var(--gold);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.55);
+}
+
+.task-item.is-dragging .task-handle {
+  cursor: grabbing;
 }
 
 .task-empty {
+  padding: 36px 0;
+  text-align: center;
   color: var(--muted);
+  font-family: var(--serif);
+  font-size: 1.3rem;
   font-style: italic;
+}
+
+.task-hint {
+  margin-top: 20px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+/* The "Deleted … · Undo" pop-up, centred at the bottom of the screen.
+   It slides up when tasks.js adds .is-visible. "visibility" waits for the
+   fade-out to finish before hiding it completely. */
+.task-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: calc(100% - 32px);
+  padding: 12px 14px 12px 20px;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--gold-dark);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 16px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+
+.task-toast.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+  transition-delay: 0s;
+}
+
+.task-toast-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-toast-undo {
+  flex: none;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  background: none;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.task-toast-undo:hover {
+  border-color: var(--gold);
+}
+
+/* Small screens: tighter rows, so the task text keeps most of the width */
+@media (max-width: 560px) {
+  .task-item {
+    gap: 6px;
+    padding: 8px 6px 8px 2px;
+  }
+  .task-handle {
+    width: 24px;
+  }
+  .task-actions {
+    gap: 0;
+  }
+  .task-icon {
+    width: 30px;
+  }
+  .task-progress,
+  .task-progress-track {
+    width: 100%;
+    justify-items: start;
+  }
+}
+
+/* Phones and touch screens: there's no hover, so keep the buttons visible */
+@media (hover: none) {
+  .task-handle,
+  .task-icon {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-panel:not([hidden]),
+  .task-item.is-new {
+    animation: none;
+  }
+  .admin-tab::after,
+  .task-progress-fill,
+  .task-toast,
+  .task-list.is-sorting .task-item {
+    transition: none;
+  }
 }
 
 /* Hero entrance animation — each part starts invisible and slightly low,

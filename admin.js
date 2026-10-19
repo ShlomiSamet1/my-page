@@ -1,4 +1,5 @@
-// admin.js — makes the Admin page work: log in, show messages, delete, log out.
+// admin.js — makes the Admin page work: log in, switch tabs, show messages,
+// delete, log out. The "Tasks" tab has its own file, tasks.js.
 //
 // How login works:
 //   1. You type the password; we send it to the server (POST /api/admin/login).
@@ -12,15 +13,20 @@
 // even if someone types HTML or code into the contact form, it can't run here.
 
 import { API_BASE } from "./config.js";
+import { onTasksChange } from "./tasks.js";
 
 const TOKEN_KEY = "admin-token"; // The name the token is saved under
+const TAB_KEY = "admin-tab"; // The last tab you had open
 
 // Parts of the page
 const loginSection = document.querySelector(".admin-login");
 const loginForm = document.getElementById("login-form");
 const passwordInput = document.getElementById("admin-password");
 const passwordError = document.getElementById("admin-password-error");
-const inbox = document.querySelector(".admin-inbox");
+const area = document.querySelector(".admin-area");
+const tabs = [...document.querySelectorAll(".admin-tab")];
+const messagesBadge = document.getElementById("messages-badge");
+const tasksBadge = document.getElementById("tasks-badge");
 const list = document.querySelector(".admin-list");
 const count = document.querySelector(".admin-count");
 const template = document.getElementById("message-template");
@@ -60,21 +66,71 @@ async function api(path, options = {}) {
   return reply;
 }
 
-// ─── Switching between the two views ───
+// ─── Switching between the login and the admin area ───
 
 function showLogin(message = "") {
   setToken(null);
-  inbox.hidden = true;
+  area.hidden = true;
   loginSection.hidden = false;
   passwordError.textContent = message;
   passwordInput.focus();
 }
 
-async function showInbox() {
+// Opens the admin area on the tab you used last time
+async function showArea() {
   loginSection.hidden = true;
-  inbox.hidden = false;
+  area.hidden = false;
+  selectTab(savedTab() || tabs[0]);
   await loadMessages();
 }
+
+// ─── Tabs: Messages / Tasks ───
+
+// Shows one tab's panel and hides the other. aria-selected tells screen
+// readers which tab is open; tabIndex makes Tab key land on the open one.
+function selectTab(tab, { focus = false } = {}) {
+  for (const other of tabs) {
+    const selected = other === tab;
+    other.setAttribute("aria-selected", selected);
+    other.tabIndex = selected ? 0 : -1;
+    const panel = document.getElementById(other.getAttribute("aria-controls"));
+    panel.hidden = !selected;
+  }
+  if (focus) tab.focus();
+  try {
+    localStorage.setItem(TAB_KEY, tab.id);
+  } catch {}
+}
+
+function savedTab() {
+  try {
+    return tabs.find((tab) => tab.id === localStorage.getItem(TAB_KEY));
+  } catch {
+    return null;
+  }
+}
+
+// Click a tab to open it; on a tab, ← → (or Home / End) move to the others
+tabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => selectTab(tab));
+  tab.addEventListener("keydown", (event) => {
+    const last = tabs.length - 1;
+    const next = {
+      ArrowRight: index === last ? 0 : index + 1,
+      ArrowLeft: index === 0 ? last : index - 1,
+      Home: 0,
+      End: last,
+    }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    selectTab(tabs[next], { focus: true });
+  });
+});
+
+// The small numbers on the tabs: messages, and tasks still to do
+onTasksChange((open) => {
+  tasksBadge.textContent = open || "";
+});
 
 // ─── Messages ───
 
@@ -84,6 +140,7 @@ async function loadMessages() {
   try {
     const { messages } = await api("/api/admin/messages");
     list.replaceChildren(...messages.map(renderMessage));
+    messagesBadge.textContent = messages.length || "";
     count.textContent =
       messages.length === 1 ? "1 message" : `${messages.length} messages`;
   } catch (error) {
@@ -188,7 +245,7 @@ loginForm.addEventListener("submit", async (event) => {
     });
     setToken(token);
     passwordInput.value = ""; // Don't keep the password on the page
-    await showInbox();
+    await showArea();
   } catch (error) {
     passwordError.textContent =
       error instanceof TypeError ? "Couldn't reach the server." : error.message;
@@ -198,6 +255,6 @@ loginForm.addEventListener("submit", async (event) => {
 document.getElementById("refresh").addEventListener("click", loadMessages);
 document.getElementById("logout").addEventListener("click", () => showLogin());
 
-// When the page opens: if this tab is already logged in, go straight to the messages
-if (getToken()) showInbox();
+// When the page opens: if this tab is already logged in, go straight in
+if (getToken()) showArea();
 else passwordInput.focus();
