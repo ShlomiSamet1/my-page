@@ -24,7 +24,7 @@ my-page/
 │  THE SERVER (Cloudflare)
 ├── server/
 │   ├── index.js          the server code
-│   └── migrations/       how the database tables are built
+│   └── migrations/       how the database tables are built (messages, tasks)
 ├── wrangler.jsonc        Cloudflare settings for the server
 │
 │  TOOLS AND SETUP
@@ -43,11 +43,14 @@ web addresses (`…/my-page/` and `…/my-page/admin.html`).
 
 1. **Start fresh.** In the project folder: `git checkout main`, then `git pull`.
 2. **Make a branch** for the change, e.g. `git checkout -b new-feature`, so `main` (the live site) stays safe.
-3. **Run it on your computer:** `npm.cmd run site` (website, http://localhost:5173) and, when you need the messages or login, `npm.cmd run server` (in a second terminal). Always open pages from `http://localhost:5173/…`, never by double-clicking the file.
+3. **Run it on your computer:** `npm.cmd run site` (website, http://localhost:5173) and, when you need the messages, tasks or login, `npm.cmd run server` (in a second terminal). Always open pages from `http://localhost:5173/…`, never by double-clicking the file.
+   - `npm.cmd run server` uses the **real online database**: tasks and messages you save while testing are kept in the cloud and show on the live site too, whatever branch you're on. Log in with the password in `.env`.
+   - `npm.cmd run server:test` uses a **private test database** on your computer instead. Use it for risky experiments (e.g. testing a new delete feature) so real data is never at risk.
 4. **Edit and check** in the browser. Then `npm.cmd run format` to tidy the code.
 5. **Save and upload:** `git add` the files, `git commit -m "what changed"`, `git push -u origin new-feature`, and open a pull request.
 6. **Merge** on GitHub with **"Rebase and merge"**. The live site updates about a minute later.
 7. **Server changes only** (`server/` or `wrangler.jsonc`): after merging, run `npm.cmd run deploy` to put the new server online.
+   If you added a file in `server/migrations/` (a new table), run `npm.cmd run db:online` **before** deploying, and `npm.cmd run db:local` for the test database.
 8. Back to step 1.
 
 ## How the pieces fit
@@ -74,7 +77,7 @@ The Admin page for reading messages. Anyone can open it, but it shows nothing un
 
 ### js/tasks.js
 
-The to-do list on the Admin page's Tasks tab (imported by `admin.js`). Add, tick done, edit (double-click or the pencil; Enter saves, Esc cancels), delete with an Undo pop-up (also Ctrl+Z), reorder by dragging the ⠿ handle (mouse or finger) or with ↑ ↓ on the handle, filter All / To do / Done, clear finished tasks, and a progress bar. Saved in `localStorage`, so the list lives in that browser only, not on the server. One `tasks` array is the single source of truth: every change updates it, saves it and redraws the list from it, with rows gliding to their new places.
+The to-do list on the Admin page's Tasks tab (imported by `admin.js`). Add, tick done, edit (double-click or the pencil; Enter saves, Esc cancels), delete with an Undo pop-up (also Ctrl+Z), reorder by dragging the ⠿ handle (mouse or finger) or with ↑ ↓ on the handle, filter All / To do / Done, clear finished tasks, and a progress bar. Saved on the server (the `tasks` table, next to the messages), so the list is the same in every browser and device, and only the admin can see it. Each change updates the `tasks` array, redraws the list at once, and is sent to the server in the background; changes go one at a time, in order. A small line shows “Saving…” / “Saved to the cloud”; if a change fails, a pop-up says so and the list reloads from the server, retrying every 10 seconds while the server can't be reached. Tasks saved in the browser by the older version are moved to the server on first login.
 
 ### css/style.css
 
@@ -100,7 +103,7 @@ The server's address. On your computer it's `http://localhost:8787`; on the live
 
 ### server/index.js
 
-The server code. Endpoints: `GET /api/status`, `POST /api/contact`, `POST /api/admin/login`, `GET /api/admin/messages`, `DELETE /api/admin/messages/:id`. Protections:
+The server code. Endpoints: `GET /api/status`, `POST /api/contact`, `POST /api/admin/login`, `GET /api/admin/messages`, `DELETE /api/admin/messages/:id`, and for tasks `GET` / `POST /api/admin/tasks`, `PATCH` / `DELETE /api/admin/tasks/:id`, `PUT /api/admin/tasks/order` and `POST /api/admin/tasks/clear-done` (all admin-only). Protections:
 
 - Only the site's own addresses may call it (CORS).
 - Every message is validated again on the server.
@@ -113,11 +116,11 @@ The dummy `API_KEY` is read here to "notify" about new messages: it's logged as 
 
 ### wrangler.jsonc
 
-Settings for Cloudflare: the server's name, its code file, the database connection, and which websites may call it. No secrets, so it's safe on GitHub.
+Settings for Cloudflare: the server's name, its code file, the database connection, and which websites may call it. `"remote": true` makes the server on your computer use the online database too. No secrets, so it's safe on GitHub.
 
 ### server/migrations/
 
-SQL files that build the database tables (`messages`, and `attempts` for rate limiting). Wrangler remembers which ones have run.
+SQL files that build the database tables: `0001` makes `messages` and `attempts` (for rate limiting), `0002` makes `tasks`. Wrangler remembers which ones have run, so `db:online` / `db:local` only run new ones.
 
 ### tools/dev-server.js
 
@@ -151,13 +154,14 @@ Generated by npm; never edit it by hand. Records the exact version of every inst
 
 Run these in the project folder. In PowerShell, type `npm.cmd` instead of `npm`, because Windows blocks the `npm.ps1` script by default.
 
-| Command             | What it does                                                          |
-| ------------------- | --------------------------------------------------------------------- |
-| `npm install`       | Downloads the packages listed in `package.json` into `node_modules/`  |
-| `npm run check`     | Lists files whose formatting Prettier would tidy; changes nothing     |
-| `npm run format`    | Tidies the formatting (spacing, line breaks) of every file            |
-| `npm run site`      | Shows the website at http://localhost:5173                            |
-| `npm run server`    | Runs the server at http://localhost:8787, reading secrets from `.env` |
-| `npm run db:local`  | Creates the database tables on your computer (once)                   |
-| `npm run db:online` | Creates the database tables on Cloudflare (once, when going online)   |
-| `npm run deploy`    | Puts the server online on Cloudflare                                  |
+| Command               | What it does                                                                                         |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| `npm install`         | Downloads the packages listed in `package.json` into `node_modules/`                                 |
+| `npm run check`       | Lists files whose formatting Prettier would tidy; changes nothing                                    |
+| `npm run format`      | Tidies the formatting (spacing, line breaks) of every file                                           |
+| `npm run site`        | Shows the website at http://localhost:5173                                                           |
+| `npm run server`      | Runs the server at http://localhost:8787, reading secrets from `.env`, with the real online database |
+| `npm run server:test` | The same, with a private test database on your computer                                              |
+| `npm run db:local`    | Creates or updates the tables in the test database on your computer                                  |
+| `npm run db:online`   | Creates or updates the tables in the online database                                                 |
+| `npm run deploy`      | Puts the server online on Cloudflare                                                                 |

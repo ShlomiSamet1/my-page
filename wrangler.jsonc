@@ -25,6 +25,11 @@
       // Not secret: only this Cloudflare account can use it.
       "database_id": "a723f50b-38a8-42e6-ac69-bd04faac3032",
       "migrations_dir": "server/migrations",
+      // true = `npm.cmd run server` on your computer also uses this online
+      // database, so tasks and messages you save while testing are real and
+      // show up on the live site. `npm.cmd run server:test` uses a private
+      // test copy on your computer instead (for risky experiments).
+      "remote": true,
     },
   ],
 

@@ -1323,6 +1323,23 @@ main {
   transition: width 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
+/* "Saving…" / "Saved to the cloud": quiet, gold when saved, red on errors */
+.task-sync {
+  min-height: 1.4em;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  transition: color 0.3s ease;
+}
+
+.task-sync[data-state="ok"] {
+  color: var(--gold);
+}
+
+.task-sync[data-state="error"] {
+  color: var(--error);
+}
+
 /* Text box and Add button side by side, bottoms lined up. On phones the
    button wraps onto its own line below the box. */
 .task-form {

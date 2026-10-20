@@ -1,5 +1,6 @@
 // tasks.js — the to-do list on the Admin page's "Tasks" tab.
-// admin.js imports this file, so it runs once when the Admin page opens.
+// admin.js imports this file, starts it after you log in (startTasks) and
+// stops it when you log out (stopTasks).
 //
 // What you can do:
 //   - Add a task (type and press Enter or Add)
@@ -10,18 +11,23 @@
 //     and press ↑ / ↓
 //   - Show All / To do / Done, and clear all finished tasks at once
 //
+// Where the tasks are saved: on the server, in the online database (next to
+// the messages). So the list is the same on every computer, phone and browser,
+// and only someone logged in as admin can see or change it.
+//
 // How it's organised:
-//   - "tasks" is the one list that holds everything (the single source of truth).
-//   - Every change follows the same moves: change "tasks", then commit(),
-//     which saves it and redraws the list from it. So the screen can never
-//     disagree with the saved data.
-//   - The list is saved in localStorage: this browser only, not the server.
+//   - "tasks" is the list on screen. Every change follows the same moves:
+//     change "tasks", redraw the list from it (render), and send that one
+//     change to the server (send). The screen updates instantly, without
+//     waiting for the server.
+//   - Changes go to the server one at a time, in the order you made them.
+//     If one fails, the list is reloaded from the server, which has the truth.
 //
 // Safety: task text is written with textContent (plain text), so even if
 // someone types HTML or code into the box, it can't run here.
 
-const STORAGE_KEY = "tasks"; // The names the list and the filter are saved under
-const FILTER_KEY = "tasks-filter";
+const FILTER_KEY = "tasks-filter"; // The filter you chose (kept in this browser)
+const OLD_KEY = "tasks"; // Where older versions kept tasks in the browser
 const UNDO_SECONDS = 6; // How long the "Undo" pop-up stays
 const MOVE_MS = 220; // How long the slide animations take
 
@@ -38,6 +44,7 @@ const empty = panel.querySelector(".task-empty");
 const hint = panel.querySelector(".task-hint");
 const progressText = panel.querySelector(".task-progress-text");
 const progressFill = panel.querySelector(".task-progress-fill");
+const syncStatus = panel.querySelector(".task-sync");
 const filterButtons = panel.querySelectorAll("[data-filter]");
 const clearButton = panel.querySelector(".task-clear");
 const announcer = document.getElementById("task-announce");
@@ -48,13 +55,15 @@ const template = document.getElementById("task-template");
 
 // What the empty list says, depending on the filter
 const EMPTY_TEXT = {
+  loading: "Loading your tasks…",
   none: "No tasks yet — add your first one above.",
   active: "Nothing left to do. Nice work!",
   done: "Nothing finished yet.",
 };
 
 // Each task looks like { id: "lq3x9a1b2", text: "Call the bank", done: false }
-let tasks = load();
+let tasks = [];
+let loaded = false; // Has the list arrived from the server yet?
 let filter = loadFilter(); // "all", "active" or "done"
 let editingId = null; // The task being edited, if any
 let newId = null; // The task just added, so it can slide in
@@ -63,31 +72,138 @@ let undoState = null; // A copy of the list from before the last delete
 let undoTimer;
 let onChange = () => {}; // Set by admin.js to update the tab's counter
 
+let callServer = null; // admin.js's way of calling the server (with the login)
+let queue = Promise.resolve(); // Changes waiting to be sent, in order
+let pending = 0; // How many changes are on their way
+
 // admin.js calls this to hear the number of open tasks whenever it changes
 export function onTasksChange(callback) {
   onChange = callback;
   render();
 }
 
-// ─── Saving (wrapped in try/catch: some browsers block storage) ───
+// After login: load the list from the server, then move over any tasks an
+// older version of this page had saved in this browser
+export async function startTasks(api) {
+  callServer = api;
+  loaded = false;
+  render();
+  await refresh();
+  await moveOldTasks();
+}
 
-// Reads the saved list. If there's nothing saved or it's broken, start empty.
-// Only well-formed tasks are kept, so a damaged save can't break the page.
-function load() {
+// After logout: forget the list, so nothing private stays on screen
+export function stopTasks() {
+  callServer = null;
+  clearTimeout(retryTimer);
+  tasks = [];
+  loaded = false;
+  hideToast();
+  setSync("");
+  render();
+}
+
+// ─── Talking to the server ───
+
+const RETRY_SECONDS = 10; // How often to try again when the server can't be reached
+let retryTimer;
+
+// Gets the whole list from the server and shows it. Skipped while you're
+// dragging or editing, so the list never jumps under your hands.
+// If the server can't be reached, it keeps trying every few seconds.
+async function refresh() {
+  if (!callServer) return;
+  clearTimeout(retryTimer);
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!Array.isArray(saved)) return [];
-    return saved
-      .filter((task) => task && typeof task.text === "string" && task.text)
-      .map((task) => ({
-        id: String(task.id ?? makeId()),
-        text: task.text.slice(0, 200),
-        done: Boolean(task.done),
-      }));
-  } catch {
-    return [];
+    const reply = await callServer("/api/admin/tasks");
+    if (drag || editingId) return;
+    tasks = reply.tasks;
+    loaded = true;
+    render();
+    if (pending === 0) setSync("Synced with the cloud", "ok");
+  } catch (error) {
+    setSync(`${plain(error)} Trying again…`, "error");
+    retryTimer = setTimeout(refresh, RETRY_SECONDS * 1000);
   }
 }
+
+// Turns an error into a sentence for people. "TypeError" is what the browser
+// gives when it can't reach the server at all (no internet, server off).
+function plain(error) {
+  return error instanceof TypeError
+    ? "Can't reach the server. Check your internet connection."
+    : error.message;
+}
+
+// Sends one change. It waits in line behind earlier changes, so they arrive
+// in the order you made them (an "add" always before an "edit" of it).
+function send(path, method, body) {
+  if (!callServer) return;
+  pending++;
+  setSync("Saving…");
+  const request = queue.then(() =>
+    callServer(path, { method, body: body && JSON.stringify(body) }),
+  );
+  queue = request
+    .then(() => {
+      pending--;
+      if (pending === 0) setSync("Saved to the cloud", "ok");
+    })
+    .catch((error) => {
+      pending--;
+      setSync("Not saved", "error");
+      showToast(`Couldn't save that change. ${plain(error)}`, false);
+      // Reload once the line is empty, to show what the server really has
+      setTimeout(() => queue.then(() => pending === 0 && refresh()));
+    });
+}
+
+// The small "Saving… / Saved to the cloud" line under the progress bar
+function setSync(text, state = "") {
+  syncStatus.textContent = text;
+  syncStatus.dataset.state = state;
+}
+
+// Older versions of this page kept tasks in the browser (localStorage).
+// The first time you log in here, any of those that aren't on the server
+// yet are sent there, then removed from the browser (a backup copy stays).
+async function moveOldTasks() {
+  let old;
+  try {
+    old = JSON.parse(localStorage.getItem(OLD_KEY));
+  } catch {
+    return;
+  }
+  if (!Array.isArray(old) || old.length === 0 || !loaded) return;
+
+  const known = new Set(tasks.map((task) => task.id));
+  const missing = old.filter(
+    (task) =>
+      task && typeof task.text === "string" && !known.has(String(task.id)),
+  );
+  for (const task of missing) {
+    const moved = {
+      id: /^[a-z0-9]{1,40}$/i.test(String(task.id))
+        ? String(task.id)
+        : makeId(),
+      text: task.text.trim().slice(0, 200),
+      done: Boolean(task.done),
+    };
+    if (!moved.text) continue;
+    tasks.push(moved);
+    send("/api/admin/tasks", "POST", moved);
+  }
+  try {
+    localStorage.setItem(`${OLD_KEY}-backup`, JSON.stringify(old));
+    localStorage.removeItem(OLD_KEY);
+  } catch {}
+  if (missing.length) {
+    render();
+    announce(`Moved ${missing.length} saved tasks to the cloud.`);
+  }
+}
+
+// ─── Small settings kept in this browser ───
 
 function loadFilter() {
   try {
@@ -98,11 +214,10 @@ function loadFilter() {
   }
 }
 
-function save() {
+function saveFilter() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
     localStorage.setItem(FILTER_KEY, filter);
-  } catch {} // Storage blocked: the list still works until the page closes
+  } catch {}
 }
 
 // A unique id: the time in base 36 plus a few random letters
@@ -119,14 +234,9 @@ function visibleTasks() {
   return tasks;
 }
 
-// Save, then redraw. "before" (optional) is where each task was on screen
-// beforehand, so they can glide to their new places (see render).
-function commit(before) {
-  save();
-  render(before);
-}
-
-// Redraws the list, the progress bar, the filters and the counts from "tasks"
+// Redraws the list, the progress bar, the filters and the counts from "tasks".
+// "before" (optional) is where each task was on screen beforehand, so the
+// rows can glide to their new places (see glide).
 function render(before) {
   const shown = visibleTasks();
   list.replaceChildren(...shown.map(renderTask));
@@ -142,9 +252,11 @@ function render(before) {
     : "0%";
 
   empty.hidden = shown.length > 0;
-  empty.textContent = tasks.length ? EMPTY_TEXT[filter] : EMPTY_TEXT.none;
+  if (!loaded) empty.textContent = EMPTY_TEXT.loading;
+  else empty.textContent = tasks.length ? EMPTY_TEXT[filter] : EMPTY_TEXT.none;
   hint.hidden = shown.length === 0;
   clearButton.disabled = done === 0;
+  form.querySelector("button").disabled = !loaded;
   for (const button of filterButtons) {
     button.setAttribute("aria-pressed", button.dataset.filter === filter);
   }
@@ -244,13 +356,14 @@ form.addEventListener("submit", (event) => {
   const text = input.value.trim(); // trim() removes spaces at both ends
   input.value = "";
   input.focus();
-  if (!text) return;
+  if (!text || !loaded) return;
 
   const task = { id: makeId(), text, done: false };
   tasks.push(task);
   newId = task.id;
   if (filter === "done") filter = "all"; // Otherwise the new task would be hidden
-  commit();
+  render();
+  send("/api/admin/tasks", "POST", task);
   itemOf(task.id).scrollIntoView({ block: "nearest", behavior: "smooth" });
   announce(`Added “${short(text)}”.`);
 });
@@ -266,18 +379,19 @@ list.addEventListener("change", (event) => {
   if (!event.target.matches(".task-check")) return;
   const task = taskOf(event.target);
   task.done = event.target.checked;
+  send(`/api/admin/tasks/${task.id}`, "PATCH", { done: task.done });
   announce(task.done ? "Marked as done." : "Marked as to do.");
 
   // With "To do" or "Done" showing, the task now belongs to the other view:
   // fade it out, and move the focus to the next one
   const stillShown = filter === "all" || (filter === "done") === task.done;
   if (stillShown) {
-    commit();
+    render();
     focusTask(task.id, ".task-check");
   } else {
     const next = neighbourOf(task);
     fadeOut([itemOf(task.id)], () => {
-      commit(positions());
+      render(positions());
       focusTask(next, ".task-check");
     });
   }
@@ -308,12 +422,14 @@ function finishEdit(keep, refocus) {
   if (!id) return; // Already finished (e.g. Enter, then the box lost focus)
   editingId = null;
   const task = tasks.find((task) => task.id === id);
-  const text = itemOf(id).querySelector(".task-edit").value.trim();
-  if (keep && text && text !== task.text) {
+  const box = itemOf(id)?.querySelector(".task-edit");
+  const text = box ? box.value.trim() : "";
+  if (task && keep && text && text !== task.text) {
     task.text = text;
+    send(`/api/admin/tasks/${id}`, "PATCH", { text });
     announce("Task updated.");
   }
-  commit();
+  render();
   if (refocus) focusTask(id, ".task-edit-btn");
 }
 
@@ -332,10 +448,11 @@ function deleteTask(task) {
   const item = task && itemOf(task.id);
   if (!item || item.classList.contains("is-leaving")) return; // Double click
   const next = neighbourOf(task);
-  offerUndo(`Deleted “${short(task.text)}”`);
+  rememberForUndo(`Deleted “${short(task.text)}”`);
+  send(`/api/admin/tasks/${task.id}`, "DELETE");
   fadeOut([item], () => {
     tasks = tasks.filter((other) => other !== task);
-    commit(positions());
+    render(positions());
     focusTask(next, ".task-delete");
   });
 }
@@ -343,26 +460,52 @@ function deleteTask(task) {
 clearButton.addEventListener("click", () => {
   const finished = tasks.filter((task) => task.done);
   if (finished.length === 0) return;
-  offerUndo(
+  rememberForUndo(
     finished.length === 1
       ? "Cleared 1 finished task"
       : `Cleared ${finished.length} finished tasks`,
   );
+  send("/api/admin/tasks/clear-done", "POST");
   fadeOut([...list.querySelectorAll(".is-done")], () => {
     tasks = tasks.filter((task) => !task.done);
-    commit(positions());
+    render(positions());
   });
 });
 
 // Keeps a copy of the list from before the change and shows the pop-up
-function offerUndo(message) {
+function rememberForUndo(message) {
   undoState = tasks.map((task) => ({ ...task }));
-  toastText.textContent = message;
-  toast.classList.add("is-visible");
-  startUndoTimer();
+  showToast(message, true);
 }
 
-function startUndoTimer() {
+// Undo puts the deleted tasks back on the server, in their old places,
+// then saves the old order
+function undo() {
+  if (!undoState) return;
+  const current = new Set(tasks.map((task) => task.id));
+  undoState.forEach((task, position) => {
+    if (current.has(task.id)) return;
+    send("/api/admin/tasks", "POST", { ...task, position });
+  });
+  tasks = undoState;
+  send("/api/admin/tasks/order", "PUT", { ids: tasks.map((task) => task.id) });
+  hideToast();
+  render();
+  announce("Undone.");
+  input.focus({ preventScroll: true });
+}
+
+// ─── The pop-up at the bottom: "Deleted … · Undo", or an error ───
+
+function showToast(message, withUndo) {
+  if (!withUndo) undoState = null;
+  toastText.textContent = message;
+  undoButton.hidden = !withUndo;
+  toast.classList.add("is-visible");
+  startToastTimer();
+}
+
+function startToastTimer() {
   clearTimeout(undoTimer);
   undoTimer = setTimeout(hideToast, UNDO_SECONDS * 1000);
 }
@@ -373,19 +516,10 @@ function hideToast() {
   undoState = null;
 }
 
-function undo() {
-  if (!undoState) return;
-  tasks = undoState;
-  hideToast();
-  commit();
-  announce("Undone.");
-  input.focus({ preventScroll: true });
-}
-
 undoButton.addEventListener("click", undo);
 // The pop-up waits while the mouse is over it
 toast.addEventListener("mouseenter", () => clearTimeout(undoTimer));
-toast.addEventListener("mouseleave", () => undoState && startUndoTimer());
+toast.addEventListener("mouseleave", startToastTimer);
 
 // Ctrl+Z (Cmd+Z on Mac) also undoes, unless you're typing in a box
 document.addEventListener("keydown", (event) => {
@@ -437,7 +571,8 @@ function moveTask(from, to, before = positions()) {
   const target = shown[to];
   tasks.splice(tasks.indexOf(moved), 1);
   tasks.splice(tasks.indexOf(target) + (to > from ? 1 : 0), 0, moved);
-  commit(before);
+  render(before);
+  send("/api/admin/tasks/order", "PUT", { ids: tasks.map((task) => task.id) });
   announce(`Moved to position ${to + 1} of ${shown.length}.`);
   return true;
 }
@@ -554,17 +689,16 @@ function endDrag(event) {
 for (const button of filterButtons) {
   button.addEventListener("click", () => {
     filter = button.dataset.filter;
-    commit();
+    saveFilter();
+    render();
   });
 }
 
-// ─── Another tab of this site changed the list: show the new version ───
+// ─── Coming back to this tab: fetch the latest list ───
+// So changes made on your phone or another computer show up here too.
 
-addEventListener("storage", (event) => {
-  if (event.key === STORAGE_KEY && !drag && !editingId) {
-    tasks = load();
-    render();
-  }
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && pending === 0) refresh();
 });
 
-render(); // Show the saved tasks when the page opens
+render(); // Draw the empty list until the server answers
