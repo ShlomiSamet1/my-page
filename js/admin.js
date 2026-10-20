@@ -13,7 +13,7 @@
 // even if someone types HTML or code into the contact form, it can't run here.
 
 import { API_BASE } from "./config.js";
-import { onTasksChange } from "./tasks.js";
+import { onTasksChange, startTasks, stopTasks } from "./tasks.js";
 
 const TOKEN_KEY = "admin-token"; // The name the token is saved under
 const TAB_KEY = "admin-tab"; // The last tab you had open
@@ -70,6 +70,7 @@ async function api(path, options = {}) {
 
 function showLogin(message = "") {
   setToken(null);
+  stopTasks(); // Clear the task list from the screen
   area.hidden = true;
   loginSection.hidden = false;
   passwordError.textContent = message;
@@ -81,6 +82,7 @@ async function showArea() {
   loginSection.hidden = true;
   area.hidden = false;
   selectTab(savedTab() || tabs[0]);
+  startTasks(api); // Tasks load from the server too, using the same login
   await loadMessages();
 }
 

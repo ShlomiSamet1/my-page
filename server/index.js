@@ -11,10 +11,18 @@
 //   GET    /api/admin/messages      → the admin (with token) gets all messages
 //   DELETE /api/admin/messages/:id  → the admin (with token) deletes one message
 //
+// The Admin page's Tasks tab (all need the admin token too):
+//   GET    /api/admin/tasks            → every task, in list order
+//   POST   /api/admin/tasks            → add a task (or put a deleted one back, for Undo)
+//   PATCH  /api/admin/tasks/:id        → change a task's text and/or done
+//   DELETE /api/admin/tasks/:id        → delete one task
+//   PUT    /api/admin/tasks/order      → save a new order (a list of ids, top first)
+//   POST   /api/admin/tasks/clear-done → delete every finished task
+//
 // Secrets are read from "env" (short for environment):
 //   env.API_KEY         the dummy API key (from .env locally, Cloudflare settings online)
 //   env.ADMIN_PASSWORD  the admin's password (same places)
-//   env.DB              the database where messages are saved (Cloudflare D1)
+//   env.DB              the database where messages and tasks are saved (Cloudflare D1)
 //   env.ALLOWED_ORIGINS the websites allowed to call this server (wrangler.jsonc)
 // None of the secrets are ever sent back in a response.
 
@@ -24,6 +32,8 @@ import { validateContact, REASONS } from "../js/validation.js";
 
 const MAX_BODY_BYTES = 10_000; // Reject requests bigger than ~10 KB
 const TOKEN_HOURS = 8; // How long an admin login lasts
+const MAX_TASKS = 500; // The most tasks the list may hold
+const TASK_TEXT_MAX = 200; // The longest a task's text may be (same as the page)
 // Rate limits: at most N attempts per visitor (IP address) in a time window.
 // They stop someone flooding the inbox or guessing the password over and over.
 const LIMITS = {
@@ -91,6 +101,28 @@ async function route(request, env, url) {
   const match = pathname.match(/^\/api\/admin\/messages\/(\d+)$/);
   if (method === "DELETE" && match) {
     return withAdmin(request, env, () => deleteMessage(env, Number(match[1])));
+  }
+
+  // Tasks
+  if (pathname === "/api/admin/tasks") {
+    if (method === "GET") return withAdmin(request, env, () => listTasks(env));
+    if (method === "POST") {
+      return withAdmin(request, env, () => addTask(request, env));
+    }
+  }
+  if (method === "PUT" && pathname === "/api/admin/tasks/order") {
+    return withAdmin(request, env, () => orderTasks(request, env));
+  }
+  if (method === "POST" && pathname === "/api/admin/tasks/clear-done") {
+    return withAdmin(request, env, () => clearDoneTasks(env));
+  }
+  // "/api/admin/tasks/" followed by a task id (letters and digits)
+  const task = pathname.match(/^\/api\/admin\/tasks\/([a-z0-9]{1,40})$/i);
+  if (method === "PATCH" && task) {
+    return withAdmin(request, env, () => editTask(request, env, task[1]));
+  }
+  if (method === "DELETE" && task) {
+    return withAdmin(request, env, () => deleteTask(env, task[1]));
   }
   return json({ error: "Not found." }, 404);
 }
@@ -191,6 +223,137 @@ async function deleteMessage(env, id) {
     .run();
   if (meta.changes === 0) return json({ error: "Message not found." }, 404);
   return json({ ok: true });
+}
+
+// ─── Tasks ───
+// The page sends each change as it happens (add, edit, tick, delete, move),
+// so the list in the database is always the latest one, on every device.
+
+// GET /api/admin/tasks — every task, top of the list first.
+// "done" is stored as 0 / 1 (databases have no true/false), so it's
+// turned back into true / false for the page.
+async function listTasks(env) {
+  const { results } = await env.DB.prepare(
+    "SELECT id, text, done FROM tasks ORDER BY position, created_at",
+  ).all();
+  const tasks = results.map((task) => ({ ...task, done: task.done === 1 }));
+  return json({ tasks });
+}
+
+// POST /api/admin/tasks — { id, text, done?, position? }
+// Without a position, the task goes to the bottom. With one, it's an Undo
+// putting a deleted task back where it was. If the id already exists
+// (e.g. the request was sent twice), nothing changes.
+async function addTask(request, env) {
+  const body = await readJson(request);
+  const id = taskId(body?.id);
+  const text = taskText(body?.text);
+  if (!id || !text) return json({ error: "The task couldn't be read." }, 400);
+
+  const { count } = await env.DB.prepare(
+    "SELECT COUNT(*) AS count FROM tasks",
+  ).first();
+  if (count >= MAX_TASKS) {
+    return json({ error: `The list is full (${MAX_TASKS} tasks).` }, 400);
+  }
+
+  let position = body.position;
+  if (!Number.isInteger(position) || position < 0) {
+    const row = await env.DB.prepare(
+      "SELECT COALESCE(MAX(position), -1) + 1 AS next FROM tasks",
+    ).first();
+    position = row.next;
+  }
+
+  // ON CONFLICT DO NOTHING = if this id is already saved, keep it as it is
+  await env.DB.prepare(
+    `INSERT INTO tasks (id, text, done, position, created_at)
+     VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`,
+  )
+    .bind(
+      id,
+      text,
+      body.done === true ? 1 : 0,
+      position,
+      new Date().toISOString(),
+    )
+    .run();
+  return json({ ok: true }, 201);
+}
+
+// PATCH /api/admin/tasks/:id — { text?, done? }: only what's sent changes
+async function editTask(request, env, id) {
+  const body = await readJson(request);
+  if (!body) return json({ error: "The change couldn't be read." }, 400);
+  const changes = [];
+  const values = [];
+  if ("text" in body) {
+    const text = taskText(body.text);
+    if (!text) return json({ error: "A task can't be empty." }, 400);
+    changes.push("text = ?");
+    values.push(text);
+  }
+  if ("done" in body) {
+    changes.push("done = ?");
+    values.push(body.done === true ? 1 : 0);
+  }
+  if (changes.length === 0) return json({ error: "Nothing to change." }, 400);
+
+  // The column names come from our own list above, never from the page;
+  // the values still go through "?" placeholders
+  const { meta } = await env.DB.prepare(
+    `UPDATE tasks SET ${changes.join(", ")} WHERE id = ?`,
+  )
+    .bind(...values, id)
+    .run();
+  if (meta.changes === 0) return json({ error: "Task not found." }, 404);
+  return json({ ok: true });
+}
+
+// DELETE /api/admin/tasks/:id — removes one task. The page offers Undo by
+// sending it back with POST.
+async function deleteTask(env, id) {
+  await env.DB.prepare("DELETE FROM tasks WHERE id = ?").bind(id).run();
+  return json({ ok: true }); // Already gone counts as success
+}
+
+// PUT /api/admin/tasks/order — { ids: [...] }, top of the list first.
+// Every task gets its place number in one batch: all of them or none.
+async function orderTasks(request, env) {
+  const body = await readJson(request);
+  const ids = Array.isArray(body?.ids) ? body.ids.map(taskId) : [];
+  if (ids.length === 0 || ids.length > MAX_TASKS || ids.some((id) => !id)) {
+    return json({ error: "The order couldn't be read." }, 400);
+  }
+  await env.DB.batch(
+    ids.map((id, position) =>
+      env.DB.prepare("UPDATE tasks SET position = ? WHERE id = ?").bind(
+        position,
+        id,
+      ),
+    ),
+  );
+  return json({ ok: true });
+}
+
+// POST /api/admin/tasks/clear-done — deletes every finished task
+async function clearDoneTasks(env) {
+  await env.DB.prepare("DELETE FROM tasks WHERE done = 1").run();
+  return json({ ok: true });
+}
+
+// A task id: 1–40 letters and digits (the page makes them), otherwise null
+function taskId(value) {
+  return typeof value === "string" && /^[a-z0-9]{1,40}$/i.test(value)
+    ? value
+    : null;
+}
+
+// A task's text: trimmed, 1–200 characters, otherwise null
+function taskText(value) {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  return text && text.length <= TASK_TEXT_MAX ? text : null;
 }
 
 // ─── The API key: where the assignment's dummy key is used ───
@@ -337,7 +500,7 @@ function cors(origin) {
   if (!origin) return { Vary: "Origin" };
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",

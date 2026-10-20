@@ -2,7 +2,7 @@
 <!--
   admin.html — the Admin page. After logging in it has two tabs:
     - Messages: what visitors sent through the contact form (from the server)
-    - Tasks: your own to-do list (saved in this browser only)
+    - Tasks: your own to-do list (also saved on the server, so it's the same everywhere)
   Anyone can open this page, but it shows nothing until the right password is
   entered: the messages come from the server, and the server only hands them
   over after checking the password. The logic is in admin.js (login, tabs,
@@ -139,6 +139,8 @@
               <span class="task-progress-track" aria-hidden="true">
                 <span class="task-progress-fill"></span>
               </span>
+              <!-- "Saving…" / "Saved to the cloud" (tasks.js) -->
+              <p class="task-sync" aria-live="polite"></p>
             </div>
           </div>
 
