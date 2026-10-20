@@ -33,6 +33,7 @@ my-page/
 │   └── dev-server.js     shows the website on your computer
 ├── package.json          project record card and commands (npm run …)
 ├── NOTES.md              this guide
+├── CLAUDE.md             rules Claude reads at the start of every session
 ├── .env                  secrets for your computer (never uploaded)
 └── .env.example          template listing which secrets exist
 ```
