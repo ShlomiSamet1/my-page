@@ -5,8 +5,9 @@
     "scripts: shortcuts. Run with `npm run <name>` (in PowerShell: `npm.cmd run <name>`).",
     "  check     = list files whose formatting Prettier would tidy (changes nothing)",
     "  format    = tidy the formatting of every file",
+    "  start     = show the website at http://localhost:5173 and open the Admin page (same as double-clicking Start website.cmd)",
     "  site      = show the website at http://localhost:5173",
-    "  server    = run the server at http://localhost:8787 (reads secrets from .env), using the REAL online database",
+    "  server    = run the server at http://localhost:8787 (reads secrets from .env), using the REAL online database. Only needed when changing the server code; pages use it when opened with ?server=local",
     "  server:test = the same, but with a private test database on this computer (safe for experiments)",
     "  db:local  = create or update the database tables on this computer",
     "  db:online = create or update the database tables on Cloudflare",
@@ -22,6 +23,7 @@
   "scripts": {
     "format": "prettier --write .",
     "check": "prettier --check .",
+    "start": "node tools/dev-server.js --open",
     "site": "node tools/dev-server.js",
     "server": "wrangler dev",
     "server:test": "wrangler dev --local",

@@ -28,6 +28,7 @@ my-page/
 ├── wrangler.jsonc        Cloudflare settings for the server
 │
 │  TOOLS AND SETUP
+├── Start website.cmd     double-click: opens the website on your computer
 ├── tools/
 │   └── dev-server.js     shows the website on your computer
 ├── package.json          project record card and commands (npm run …)
@@ -43,9 +44,10 @@ web addresses (`…/my-page/` and `…/my-page/admin.html`).
 
 1. **Start fresh.** In the project folder: `git checkout main`, then `git pull`.
 2. **Make a branch** for the change, e.g. `git checkout -b new-feature`, so `main` (the live site) stays safe.
-3. **Run it on your computer:** `npm.cmd run site` (website, http://localhost:5173) and, when you need the messages, tasks or login, `npm.cmd run server` (in a second terminal). Always open pages from `http://localhost:5173/…`, never by double-clicking the file.
-   - `npm.cmd run server` uses the **real online database**: tasks and messages you save while testing are kept in the cloud and show on the live site too, whatever branch you're on. Log in with the password in `.env`.
-   - `npm.cmd run server:test` uses a **private test database** on your computer instead. Use it for risky experiments (e.g. testing a new delete feature) so real data is never at risk.
+3. **Run it on your computer:** double-click **`Start website.cmd`** (or type `npm.cmd start`). It opens the Admin page at http://localhost:5173; keep its window open while you work, close it to stop.
+   - The page talks to the **real Cloudflare server**, so you see your real messages and tasks, whatever branch you're on, and log in with your Cloudflare admin password. Anything you save is in the cloud.
+   - Always open pages from `http://localhost:5173/…`, never by double-clicking an `.html` file (the browser blocks the page's code then).
+   - Only when changing the **server code** (`server/`): also run `npm.cmd run server` and add `?server=local` to the page address. That local server uses the real online database too; `npm.cmd run server:test` uses a private test database instead, for risky experiments. Log in to either with the password in `.env`.
 4. **Edit and check** in the browser. Then `npm.cmd run format` to tidy the code.
 5. **Save and upload:** `git add` the files, `git commit -m "what changed"`, `git push -u origin new-feature`, and open a pull request.
 6. **Merge** on GitHub with **"Rebase and merge"**. The live site updates about a minute later.
@@ -97,7 +99,7 @@ The form rules (name, optional pronouns, email, reason from a fixed list, messag
 
 ### js/config.js
 
-The server's address. On your computer it's `http://localhost:8787`; on the live site it's the Cloudflare address (`LIVE_API`), filled in once the server is online. Public on purpose: it contains no secrets.
+The server's address: the real Cloudflare server (`LIVE_API`) everywhere, including on your computer. Adding `?server=local` to a page's address on your computer switches that tab to the local server (`http://localhost:8787`); `?server=live` switches back. Public on purpose: it contains no secrets.
 
 ## The server (Cloudflare Workers)
 
@@ -124,7 +126,11 @@ SQL files that build the database tables: `0001` makes `messages` and `attempts`
 
 ### tools/dev-server.js
 
-Shows the website on your computer at `http://localhost:5173`, like GitHub Pages does online. Refuses hidden files such as `.env`.
+Shows the website on your computer at `http://localhost:5173`, like GitHub Pages does online. Refuses hidden files such as `.env`. With `--open` (used by `Start website.cmd` and `npm run start`) it also opens the Admin page in your browser; if it's already running, it just opens the page.
+
+### Start website.cmd
+
+Double-click it to start `tools/dev-server.js --open`. The window that appears is the website server: keep it open while you use the site, close it to stop.
 
 ## Secrets
 
@@ -159,6 +165,7 @@ Run these in the project folder. In PowerShell, type `npm.cmd` instead of `npm`,
 | `npm install`         | Downloads the packages listed in `package.json` into `node_modules/`                                 |
 | `npm run check`       | Lists files whose formatting Prettier would tidy; changes nothing                                    |
 | `npm run format`      | Tidies the formatting (spacing, line breaks) of every file                                           |
+| `npm start`           | Shows the website and opens the Admin page (same as double-clicking `Start website.cmd`)             |
 | `npm run site`        | Shows the website at http://localhost:5173                                                           |
 | `npm run server`      | Runs the server at http://localhost:8787, reading secrets from `.env`, with the real online database |
 | `npm run server:test` | The same, with a private test database on your computer                                              |
